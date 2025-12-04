@@ -106,6 +106,8 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
             className={`execution-node ${selected ? 'selected' : ''}`}
             style={{
                 position: 'relative',
+                width: '100%',
+                height: '100%',
                 background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
                 border: selected ? '2px solid #60a5fa' : '2px solid #3b82f6',
                 borderRadius: '8px',
@@ -114,6 +116,7 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                 fontWeight: '500',
                 minWidth: '150px',
                 minHeight: '80px',
+                boxSizing: 'border-box',
                 boxShadow: selected
                     ? '0 0 20px rgba(59, 130, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent'
                     : '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent',
@@ -225,8 +228,9 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
         <div
             style={{
                 position: 'relative',
-                width: '150px',
-                height: '150px',
+                width: '100%',
+                height: '100%',
+                boxSizing: 'border-box',
                 cursor: isEditing ? 'text' : 'grab',
             }}
             onDoubleClick={() => setIsEditing(true)}
