@@ -36,7 +36,6 @@ export const FlowchartBuilder = () => {
     const isValidConnection = useCallback((connection: Connection) => {
         // 自己接続を防ぐ（同じノードへのループ）
         if (connection.source === connection.target) {
-            alert('Cannot connect a node to itself.');
             return false;
         }
 
@@ -46,7 +45,6 @@ export const FlowchartBuilder = () => {
         );
 
         if (hasExistingEdge) {
-            alert('Each handle can only have one outgoing connection.');
             return false;
         }
 
@@ -58,11 +56,10 @@ export const FlowchartBuilder = () => {
             // このノードから既に出力があるかチェック
             const hasExistingOutput = edges.some(e =>
                 e.source === connection.source &&
-                (e.sourceHandle === 'execution-top-source' || e.sourceHandle === 'execution-bottom-source')
+                e.sourceHandle === 'execution-bottom'
             );
 
             if (hasExistingOutput) {
-                alert('Execution node can only have one output connection.');
                 return false;
             }
         }

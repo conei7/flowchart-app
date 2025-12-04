@@ -124,35 +124,16 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                     background: '#60a5fa',
                 }}
             />
-            {/* Top handle - completely overlapped (appears as single handle) */}
+            {/* Top handle - input only */}
             <Handle
                 type="target"
                 position={Position.Top}
-                id="execution-top-target"
+                id="execution-top"
                 style={{
                     background: '#60a5fa',
                     width: '16px',
                     height: '16px',
                     border: '2px solid white',
-                    top: '-8px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 2,
-                }}
-            />
-            <Handle
-                type="source"
-                position={Position.Top}
-                id="execution-top-source"
-                style={{
-                    background: '#60a5fa',
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid white',
-                    top: '-8px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 1,
                 }}
             />
             {isEditing ? (
@@ -194,35 +175,16 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                     {text}
                 </div>
             )}
-            {/* Bottom handle - completely overlapped (appears as single handle) */}
-            <Handle
-                type="target"
-                position={Position.Bottom}
-                id="execution-bottom-target"
-                style={{
-                    background: '#60a5fa',
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid white',
-                    bottom: '-8px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 2,
-                }}
-            />
+            {/* Bottom handle - output only */}
             <Handle
                 type="source"
                 position={Position.Bottom}
-                id="execution-bottom-source"
+                id="execution-bottom"
                 style={{
                     background: '#60a5fa',
                     width: '16px',
                     height: '16px',
                     border: '2px solid white',
-                    bottom: '-8px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 1,
                 }}
             />
         </div>
