@@ -38,7 +38,7 @@
 }
 
 .react-flow__handle:hover {
-    transform: scale(1.3);
+    border-width: 3px;
 }
 
 /* Custom Controls */
