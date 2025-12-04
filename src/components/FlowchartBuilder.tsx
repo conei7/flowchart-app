@@ -20,7 +20,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.0.3';
+const APP_VERSION = 'v1.0.4';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
