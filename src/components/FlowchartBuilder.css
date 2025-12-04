@@ -25,6 +25,19 @@
     stroke-width: 2;
 }
 
+/* Edges rendered on top of nodes */
+.react-flow__edges {
+    z-index: 1000 !important;
+}
+
+.react-flow__edge {
+    z-index: 1000 !important;
+}
+
+.react-flow__connectionline {
+    z-index: 1000 !important;
+}
+
 .react-flow__edge.selected .react-flow__edge-path {
     stroke: var(--accent-secondary);
     stroke-width: 3;

@@ -20,7 +20,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.0.5';
+const APP_VERSION = 'v1.0.6';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -84,20 +84,30 @@ export const FlowchartBuilder = () => {
                 }
             }
 
+            // Set edge color based on label
+            const getEdgeColor = () => {
+                if (edgeLabel === 'True') return '#10b981';
+                if (edgeLabel === 'False') return '#ef4444';
+                return '#7c3aed'; // Violet-600 - deeper purple
+            };
+
             const newEdge = {
                 ...params,
                 label: edgeLabel,
                 type: 'default',
                 animated: true,
-                style: { strokeWidth: 2 },
+                style: {
+                    strokeWidth: 2,
+                    stroke: getEdgeColor(),
+                },
                 labelStyle: {
-                    fill: edgeLabel === 'True' ? '#10b981' : edgeLabel === 'False' ? '#ef4444' : '#fff',
+                    fill: getEdgeColor(),
                     fontWeight: 600,
                     fontSize: 12,
                 },
                 labelBgStyle: {
                     fill: 'var(--bg-tertiary)',
-                    fillOpacity: 0.8,
+                    fillOpacity: 0.9,
                 },
             };
 
@@ -128,10 +138,24 @@ export const FlowchartBuilder = () => {
                 y: event.clientY - reactFlowBounds.top,
             });
 
+
+            // Set initial size based on node type
+            const getInitialStyle = (nodeType: string) => {
+                switch (nodeType) {
+                    case 'condition':
+                        return { width: 150, height: 150 };
+                    case 'execution':
+                        return { width: 150, height: 80 };
+                    default:
+                        return undefined;
+                }
+            };
+
             const newNode = {
                 id: getNodeId(),
                 type,
                 position,
+                style: getInitialStyle(type),
                 data: {
                     label,
                     onChange: (nodeId: string, newLabel: string) => {

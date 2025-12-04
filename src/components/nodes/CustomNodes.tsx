@@ -30,7 +30,7 @@ export const StartNode = memo(({ data, selected }: NodeProps) => {
                 position={Position.Bottom}
                 id="start-bottom"
                 style={{
-                    background: '#34d399',
+                    background: '#22c55e',
                     width: '16px',
                     height: '16px',
                     border: '2px solid white',
@@ -72,7 +72,7 @@ export const EndNode = memo(({ data, selected }: NodeProps) => {
                 position={Position.Top}
                 id="end-top"
                 style={{
-                    background: '#f87171',
+                    background: '#0ea5e9',
                     width: '16px',
                     height: '16px',
                     border: '2px solid white',
@@ -142,7 +142,7 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                 position={Position.Top}
                 id="execution-top"
                 style={{
-                    background: '#60a5fa',
+                    background: '#0ea5e9',
                     width: '16px',
                     height: '16px',
                     border: '2px solid white',
@@ -192,7 +192,7 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                 position={Position.Bottom}
                 id="execution-bottom"
                 style={{
-                    background: '#60a5fa',
+                    background: '#22c55e',
                     width: '16px',
                     height: '16px',
                     border: '2px solid white',
@@ -252,14 +252,28 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                     width: '100%',
                     height: '100%',
                     background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                    transform: 'rotate(45deg)',
-                    border: selected ? '2px solid #fbbf24' : '2px solid #f59e0b',
+                    clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                    border: 'none',
                     boxShadow: selected
                         ? '0 0 20px rgba(245, 158, 11, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
                         : '0 4px 16px rgba(0, 0, 0, 0.4)',
                     transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
             />
+            {/* Border overlay for selected state */}
+            {selected && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                        border: '3px solid #fbbf24',
+                        boxSizing: 'border-box',
+                        pointerEvents: 'none',
+                    }}
+                />
+            )}
             <div
                 style={{
                     position: 'absolute',
@@ -311,7 +325,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                 position={Position.Top}
                 id="condition-top"
                 style={{
-                    background: '#fbbf24',
+                    background: '#0ea5e9',
                     width: '18px',
                     height: '18px',
                     border: '2px solid white',
