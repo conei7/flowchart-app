@@ -20,7 +20,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.0.6';
+const APP_VERSION = 'v1.0.7';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -133,13 +133,36 @@ export const FlowchartBuilder = () => {
             if (!type) return;
 
             const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-            const position = reactFlowInstance.screenToFlowPosition({
-                x: event.clientX - reactFlowBounds.left,
-                y: event.clientY - reactFlowBounds.top,
+
+            // Get the position in flow coordinates
+            const dropPosition = reactFlowInstance.screenToFlowPosition({
+                x: event.clientX,
+                y: event.clientY,
             });
 
+            // Set initial size based on node type and calculate centered position
+            const getNodeSize = (nodeType: string) => {
+                switch (nodeType) {
+                    case 'condition':
+                        return { width: 150, height: 150 };
+                    case 'execution':
+                        return { width: 150, height: 80 };
+                    case 'start':
+                    case 'end':
+                        return { width: 120, height: 120 };
+                    default:
+                        return { width: 100, height: 100 };
+                }
+            };
 
-            // Set initial size based on node type
+            const nodeSize = getNodeSize(type);
+
+            // Center the node at the drop position
+            const position = {
+                x: dropPosition.x - nodeSize.width / 2,
+                y: dropPosition.y - nodeSize.height / 2,
+            };
+
             const getInitialStyle = (nodeType: string) => {
                 switch (nodeType) {
                     case 'condition':
@@ -150,6 +173,14 @@ export const FlowchartBuilder = () => {
                         return undefined;
                 }
             };
+
+            // Warn if adding a second Start node
+            if (type === 'start') {
+                const existingStart = nodes.find((n: any) => n.type === 'start');
+                if (existingStart) {
+                    alert('⚠️ Warning: A Start node already exists. Multiple Start nodes may cause confusion.');
+                }
+            }
 
             const newNode = {
                 id: getNodeId(),
@@ -172,7 +203,7 @@ export const FlowchartBuilder = () => {
 
             setNodes((nds) => nds.concat(newNode));
         },
-        [reactFlowInstance, setNodes]
+        [reactFlowInstance, setNodes, nodes]
     );
 
     const handleExportImage = useCallback(() => {
