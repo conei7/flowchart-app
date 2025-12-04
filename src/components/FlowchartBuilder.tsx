@@ -20,7 +20,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.0.7';
+const APP_VERSION = 'v1.0.8';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -102,12 +102,13 @@ export const FlowchartBuilder = () => {
                 },
                 labelStyle: {
                     fill: getEdgeColor(),
-                    fontWeight: 600,
-                    fontSize: 12,
+                    fontWeight: 700,
+                    fontSize: 13,
+                    textShadow: '0 0 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6)',
                 },
                 labelBgStyle: {
-                    fill: 'var(--bg-tertiary)',
-                    fillOpacity: 0.9,
+                    fill: 'transparent',
+                    fillOpacity: 0,
                 },
             };
 
@@ -235,45 +236,189 @@ export const FlowchartBuilder = () => {
     }, [setNodes, setEdges]);
 
     const handleAutoLayout = useCallback(() => {
-        if (!reactFlowInstance) return;
+        if (!reactFlowInstance || nodes.length === 0) return;
 
-        const startNodes = nodes.filter(n => n.type === 'start');
-        const processedNodes = new Set<string>();
-        const levelMap = new Map<string, number>();
-        const columnMap = new Map<number, string[]>();
+        const HORIZONTAL_SPACING = 250;
+        const VERTICAL_SPACING = 200;
 
-        const calculateLevel = (nodeId: string, level: number) => {
-            if (processedNodes.has(nodeId)) return;
-            processedNodes.add(nodeId);
-            levelMap.set(nodeId, Math.max(levelMap.get(nodeId) || 0, level));
+        // Find start nodes (entry points)
+        const startNodes = nodes.filter((n: any) => n.type === 'start');
+        if (startNodes.length === 0) {
+            // If no start node, just arrange in a grid
+            const updatedNodes = nodes.map((node: any, index: number) => ({
+                ...node,
+                position: {
+                    x: (index % 4) * HORIZONTAL_SPACING + 100,
+                    y: Math.floor(index / 4) * VERTICAL_SPACING + 50,
+                },
+            }));
+            setNodes(updatedNodes);
+            setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 0);
+            return;
+        }
 
-            const outgoingEdges = edges.filter(e => e.source === nodeId);
-            outgoingEdges.forEach(edge => {
-                calculateLevel(edge.target, level + 1);
-            });
-        };
+        // Build adjacency map with handle info
+        const childrenMap = new Map<string, { nodeId: string; handleType: string }[]>();
 
-        startNodes.forEach(node => calculateLevel(node.id, 0));
-
-        nodes.forEach(node => {
-            const level = levelMap.get(node.id) || 0;
-            if (!columnMap.has(level)) {
-                columnMap.set(level, []);
+        edges.forEach((edge: any) => {
+            if (!childrenMap.has(edge.source)) {
+                childrenMap.set(edge.source, []);
             }
-            columnMap.get(level)!.push(node.id);
+            childrenMap.get(edge.source)!.push({
+                nodeId: edge.target,
+                handleType: edge.sourceHandle || 'default',
+            });
         });
 
-        const updatedNodes = nodes.map((node) => {
-            const level = levelMap.get(node.id) || 0;
-            const column = columnMap.get(level)!;
-            const positionInColumn = column.indexOf(node.id);
-            const columnWidth = column.length;
+        // BFS with position tracking - tracking CENTER positions
+        const centerPositions = new Map<string, { x: number; y: number }>();
+        const visited = new Set<string>();
+        const queue: { nodeId: string; centerX: number; y: number; isBranch: boolean }[] = [];
 
+        // Helper to get node dimensions (checks multiple possible locations)
+        const getNodeSize = (node: any) => {
+            // Check direct width/height (measured by ReactFlow)
+            if (node?.width && node?.height) {
+                return { width: node.width, height: node.height };
+            }
+            // Check measured dimensions
+            if (node?.measured?.width && node?.measured?.height) {
+                return { width: node.measured.width, height: node.measured.height };
+            }
+            // Check style dimensions
+            if (node?.style?.width && node?.style?.height) {
+                return { width: node.style.width, height: node.style.height };
+            }
+            // Default sizes based on type
+            switch (node?.type) {
+                case 'condition':
+                    return { width: 150, height: 150 };
+                case 'execution':
+                    return { width: 150, height: 80 };
+                case 'start':
+                case 'end':
+                    return { width: 120, height: 120 };
+                default:
+                    return { width: 100, height: 100 };
+            }
+        };
+
+        // Main flow center X
+        const mainCenterX = 400;
+
+        // Start from start nodes
+        startNodes.forEach((startNode: any, idx: number) => {
+            queue.push({
+                nodeId: startNode.id,
+                centerX: mainCenterX + idx * HORIZONTAL_SPACING * 3,
+                y: 50,
+                isBranch: false,
+            });
+        });
+
+        while (queue.length > 0) {
+            const { nodeId, centerX, y, isBranch } = queue.shift()!;
+
+            if (visited.has(nodeId)) continue;
+            visited.add(nodeId);
+
+            // Store the CENTER position (will convert to top-left later)
+            centerPositions.set(nodeId, { x: centerX, y });
+
+            const children = childrenMap.get(nodeId) || [];
+            const node = nodes.find((n: any) => n.id === nodeId);
+            const isCondition = node?.type === 'condition';
+            const nodeSize = getNodeSize(node);
+
+            // Calculate next Y based on current node's height
+            const nextY = y + nodeSize.height + 50; // 50px gap between nodes
+
+            if (isCondition && children.length > 0) {
+                // For condition nodes
+                const trueChild = children.find(c => c.handleType.includes('true'));
+                const falseChild = children.find(c =>
+                    c.handleType.includes('left-false') || c.handleType.includes('right-false')
+                );
+
+                // True goes down - stays on center line
+                if (trueChild && !visited.has(trueChild.nodeId)) {
+                    queue.push({
+                        nodeId: trueChild.nodeId,
+                        centerX: centerX, // Same center X as parent
+                        y: nextY,
+                        isBranch: false,
+                    });
+                }
+
+                // False goes to the side based on handle direction
+                if (falseChild && !visited.has(falseChild.nodeId)) {
+                    let falseCenterX = centerX + HORIZONTAL_SPACING; // Default: right
+                    if (falseChild.handleType.includes('left')) {
+                        falseCenterX = centerX - HORIZONTAL_SPACING; // Left
+                    }
+                    queue.push({
+                        nodeId: falseChild.nodeId,
+                        centerX: falseCenterX,
+                        y: y, // Same Y level
+                        isBranch: true,
+                    });
+                }
+
+                // Handle other children
+                children.forEach((child, idx) => {
+                    if (child !== trueChild && child !== falseChild && !visited.has(child.nodeId)) {
+                        queue.push({
+                            nodeId: child.nodeId,
+                            centerX: centerX + (idx + 1) * HORIZONTAL_SPACING,
+                            y: nextY,
+                            isBranch: true,
+                        });
+                    }
+                });
+            } else {
+                // For non-condition nodes, children go down
+                children.forEach((child, idx) => {
+                    if (!visited.has(child.nodeId)) {
+                        let childCenterX = centerX;
+                        if (children.length > 1) {
+                            childCenterX = centerX + (idx - (children.length - 1) / 2) * HORIZONTAL_SPACING;
+                        }
+                        queue.push({
+                            nodeId: child.nodeId,
+                            centerX: childCenterX,
+                            y: nextY,
+                            isBranch: isBranch,
+                        });
+                    }
+                });
+            }
+        }
+
+        // Handle unvisited nodes (not connected to start)
+        let unvisitedY = 50;
+        let unvisitedCenterX = mainCenterX + HORIZONTAL_SPACING * 3;
+        nodes.forEach((node: any) => {
+            if (!visited.has(node.id)) {
+                centerPositions.set(node.id, { x: unvisitedCenterX, y: unvisitedY });
+                unvisitedY += VERTICAL_SPACING;
+                if (unvisitedY > 600) {
+                    unvisitedY = 50;
+                    unvisitedCenterX += HORIZONTAL_SPACING;
+                }
+            }
+        });
+
+        // Convert center positions to top-left positions and apply
+        const updatedNodes = nodes.map((node: any) => {
+            const centerPos = centerPositions.get(node.id);
+            if (!centerPos) return node;
+
+            const nodeSize = getNodeSize(node);
             return {
                 ...node,
                 position: {
-                    x: (positionInColumn - columnWidth / 2) * 300 + 400,
-                    y: level * 200 + 50,
+                    x: centerPos.x - nodeSize.width / 2,
+                    y: centerPos.y,
                 },
             };
         });
