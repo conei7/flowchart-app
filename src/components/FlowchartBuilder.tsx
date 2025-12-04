@@ -20,7 +20,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.0.0';
+const APP_VERSION = 'v1.0.1';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -34,6 +34,12 @@ export const FlowchartBuilder = () => {
     const [copySuccess, setCopySuccess] = useState(false);
 
     const isValidConnection = useCallback((connection: Connection) => {
+        // 自己接続を防ぐ（同じノードへのループ）
+        if (connection.source === connection.target) {
+            alert('Cannot connect a node to itself.');
+            return false;
+        }
+
         // 既存の接続チェック（同じハンドルから複数の接続を防ぐ）
         const hasExistingEdge = edges.some(
             edge => edge.source === connection.source && edge.sourceHandle === connection.sourceHandle
@@ -44,52 +50,25 @@ export const FlowchartBuilder = () => {
             return false;
         }
 
-        // Executionノードの双方向制御
+        // Executionノードの制御：出力は1つのみ、入力は複数OK
         const sourceNode = nodes.find(n => n.id === connection.source);
-        const targetNode = nodes.find(n => n.id === connection.target);
 
         // 接続元がExecutionノードの場合
         if (sourceNode?.type === 'execution') {
-            const isSourceTop = connection.sourceHandle === 'execution-top-source';
-            const isSourceBottom = connection.sourceHandle === 'execution-bottom';
+            // このノードから既に出力があるかチェック
+            const hasExistingOutput = edges.some(e =>
+                e.source === connection.source &&
+                (e.sourceHandle === 'execution-top-source' || e.sourceHandle === 'execution-bottom-source')
+            );
 
-            // この接続元ノードの他の接続を確認
-            const otherEdges = edges.filter(e => e.source === connection.source && e.sourceHandle !== connection.sourceHandle);
-
-            if (otherEdges.length > 0) {
-                // 既に片方が出力として使われている場合、もう片方も出力として使おうとしているか確認
-                const hasTopSource = otherEdges.some(e => e.sourceHandle === 'execution-top-source');
-                const hasBottomSource = otherEdges.some(e => e.sourceHandle === 'execution-bottom');
-
-                if ((isSourceTop && hasBottomSource) || (isSourceBottom && hasTopSource)) {
-                    alert('Execution node cannot have both sides as output. One side must be input.');
-                    return false;
-                }
-            }
-        }
-
-        // 接続先がExecutionノードの場合
-        if (targetNode?.type === 'execution') {
-            const isTargetTop = connection.targetHandle === 'execution-top';
-            const isTargetBottom = connection.targetHandle === 'execution-bottom-target';
-
-            // この接続先ノードの他の接続を確認
-            const otherEdges = edges.filter(e => e.target === connection.target && e.targetHandle !== connection.targetHandle);
-
-            if (otherEdges.length > 0) {
-                // 既に片方が入力として使われている場合、もう片方も入力として使おうとしているか確認
-                const hasTopTarget = otherEdges.some(e => e.targetHandle === 'execution-top');
-                const hasBottomTarget = otherEdges.some(e => e.targetHandle === 'execution-bottom-target');
-
-                if ((isTargetTop && hasBottomTarget) || (isTargetBottom && hasTopTarget)) {
-                    alert('Execution node cannot have both sides as input. One side must be output.');
-                    return false;
-                }
+            if (hasExistingOutput) {
+                alert('Execution node can only have one output connection.');
+                return false;
             }
         }
 
         return true;
-    }, [edges]);
+    }, [edges, nodes]);
 
     const onConnect = useCallback(
         (params: Connection) => {
