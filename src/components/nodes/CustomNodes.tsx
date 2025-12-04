@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
+import { Handle, Position, NodeProps, NodeResizer, useEdges } from '@xyflow/react';
 
 // Start Node - Oval shape
 export const StartNode = memo(({ data, selected }: NodeProps) => {
@@ -9,30 +9,34 @@ export const StartNode = memo(({ data, selected }: NodeProps) => {
             style={{
                 background: 'linear-gradient(135deg, #10b981, #059669)',
                 border: selected ? '2px solid #34d399' : '2px solid #10b981',
-                borderRadius: '50px',
-                padding: '16px 32px',
+                borderRadius: '50%',
+                width: '120px',
+                height: '120px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 color: 'white',
                 fontWeight: '600',
-                minWidth: '120px',
-                textAlign: 'center',
+                fontSize: '16px',
                 boxShadow: selected
                     ? '0 0 20px rgba(16, 185, 129, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
                     : '0 4px 16px rgba(0, 0, 0, 0.4)',
                 transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: 'grab',
             }}
         >
-            <div className="nodrag">{data.label || 'Start'}</div>
             <Handle
                 type="source"
                 position={Position.Bottom}
                 id="start-bottom"
                 style={{
                     background: '#34d399',
-                    width: '18px',
-                    height: '18px',
+                    width: '16px',
+                    height: '16px',
                     border: '2px solid white',
                 }}
             />
+            <span style={{ position: 'relative', zIndex: 1 }}>{data.label || 'Start'}</span>
         </div>
     );
 });
@@ -47,16 +51,20 @@ export const EndNode = memo(({ data, selected }: NodeProps) => {
             style={{
                 background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                 border: selected ? '2px solid #f87171' : '2px solid #ef4444',
-                borderRadius: '50px',
-                padding: '16px 32px',
+                borderRadius: '50%',
+                width: '120px',
+                height: '120px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 color: 'white',
                 fontWeight: '600',
-                minWidth: '120px',
-                textAlign: 'center',
+                fontSize: '16px',
                 boxShadow: selected
                     ? '0 0 20px rgba(239, 68, 68, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
                     : '0 4px 16px rgba(0, 0, 0, 0.4)',
                 transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: 'grab',
             }}
         >
             <Handle
@@ -65,12 +73,12 @@ export const EndNode = memo(({ data, selected }: NodeProps) => {
                 id="end-top"
                 style={{
                     background: '#f87171',
-                    width: '18px',
-                    height: '18px',
+                    width: '16px',
+                    height: '16px',
                     border: '2px solid white',
                 }}
             />
-            <div className="nodrag">{data.label || 'End'}</div>
+            <span style={{ position: 'relative', zIndex: 1 }}>{data.label || 'End'}</span>
         </div>
     );
 });
@@ -107,9 +115,10 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                 minWidth: '150px',
                 minHeight: '80px',
                 boxShadow: selected
-                    ? '0 0 20px rgba(59, 130, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
-                    : '0 4px 16px rgba(0, 0, 0, 0.4)',
+                    ? '0 0 20px rgba(59, 130, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent'
+                    : '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent',
                 transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: isEditing ? 'text' : 'grab',
             }}
             onDoubleClick={() => setIsEditing(true)}
         >
@@ -159,7 +168,6 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                 />
             ) : (
                 <div
-                    className="nodrag"
                     style={{
                         width: '100%',
                         height: '100%',
@@ -169,7 +177,7 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
                         textAlign: 'center',
                         wordBreak: 'break-word',
                         whiteSpace: 'pre-wrap',
-                        cursor: 'pointer',
+                        cursor: 'grab',
                     }}
                 >
                     {text}
@@ -197,7 +205,7 @@ ExecutionNode.displayName = 'ExecutionNode';
 export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
     const [text, setText] = useState(data.label || 'Condition?');
     const [isEditing, setIsEditing] = useState(false);
-    const { getEdges } = useReactFlow();
+    const edges = useEdges();
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);
@@ -210,7 +218,6 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
         e.stopPropagation();
     }, []);
 
-    const edges = getEdges();
     const leftFalseUsed = edges.some(e => e.source === id && e.sourceHandle === 'condition-left-false');
     const rightFalseUsed = edges.some(e => e.source === id && e.sourceHandle === 'condition-right-false');
 
@@ -220,6 +227,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                 position: 'relative',
                 width: '150px',
                 height: '150px',
+                cursor: isEditing ? 'text' : 'grab',
             }}
             onDoubleClick={() => setIsEditing(true)}
         >
@@ -249,7 +257,6 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                 }}
             />
             <div
-                className="nodrag"
                 style={{
                     position: 'absolute',
                     top: '50%',
@@ -266,6 +273,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                     wordBreak: 'break-word',
                     padding: '8px',
                     zIndex: 1,
+                    cursor: isEditing ? 'text' : 'grab',
                 }}
             >
                 {isEditing ? (
@@ -285,13 +293,13 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                             outline: 'none',
                             resize: 'none',
                             fontWeight: '500',
-                            fontSize: '12px',
+                            fontSize: '14px',
                             textAlign: 'center',
                             cursor: 'text',
                         }}
                     />
                 ) : (
-                    <div style={{ fontSize: '12px', whiteSpace: 'pre-wrap', cursor: 'pointer' }}>{text}</div>
+                    <div style={{ fontSize: '14px', whiteSpace: 'pre-wrap', cursor: 'grab' }}>{text}</div>
                 )}
             </div>
             <Handle
