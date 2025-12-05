@@ -12,14 +12,14 @@ import {
     BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Download, Layers, Save, FolderOpen, FileText, Copy, CheckCircle, ChevronDown } from 'lucide-react';
+import { Download, Save, FolderOpen, FileText, Copy, CheckCircle, ChevronDown } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
 import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.4';
+const APP_VERSION = 'v1.1.5';
 const STORAGE_KEY = 'flowchart-autosave';
 
 let nodeId = 0;
@@ -244,6 +244,9 @@ export const FlowchartBuilder = () => {
                         return { width: 150, height: 150 };
                     case 'execution':
                         return { width: 150, height: 80 };
+                    case 'start':
+                    case 'end':
+                        return { width: 120, height: 120 };
                     default:
                         return undefined;
                 }
@@ -595,7 +598,7 @@ export const FlowchartBuilder = () => {
 
     return (
         <div className="flowchart-builder">
-            <Sidebar />
+            <Sidebar onAutoLayout={handleAutoLayout} />
             <div className="flowchart-container" ref={reactFlowWrapper}>
                 <ReactFlow
                     nodes={nodes}
@@ -690,24 +693,6 @@ export const FlowchartBuilder = () => {
                                 </button>
                             </div>
                         </div>
-                    </Panel>
-
-                    {/* Auto Layout Button - Bottom Left */}
-                    <Panel position="bottom-left" style={{
-                        padding: '8px 12px',
-                        background: 'rgba(15, 15, 25, 0.9)',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                    }}>
-                        <button
-                            className="control-button"
-                            onClick={handleAutoLayout}
-                            title="Auto Layout"
-                            style={{ margin: 0 }}
-                        >
-                            <Layers size={18} />
-                            <span>Auto Layout</span>
-                        </button>
                     </Panel>
 
                     <Panel position="top-left" style={{

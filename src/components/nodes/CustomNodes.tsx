@@ -1,85 +1,167 @@
 import { memo, useState, useCallback } from 'react';
 import { Handle, Position, NodeProps, NodeResizer, useEdges } from '@xyflow/react';
 
-// Start Node - Oval shape
-export const StartNode = memo(({ data, selected }: NodeProps) => {
+// Start Node - Oval shape, editable, resizable
+export const StartNode = memo(({ data, selected, id }: NodeProps) => {
+    const [text, setText] = useState(data.label || 'Start');
+    const [isEditing, setIsEditing] = useState(false);
+
+    const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setText(e.target.value);
+        if (data.onChange) {
+            data.onChange(id, e.target.value);
+        }
+    }, [id, data]);
+
     return (
-        <div
-            className={`start-node ${selected ? 'selected' : ''}`}
-            style={{
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                border: selected ? '2px solid #34d399' : '2px solid #10b981',
-                borderRadius: '50%',
-                width: '120px',
-                height: '120px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '16px',
-                boxShadow: selected
-                    ? '0 0 20px rgba(16, 185, 129, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
-                    : '0 4px 16px rgba(0, 0, 0, 0.4)',
-                transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'grab',
-            }}
-        >
-            <Handle
-                type="source"
-                position={Position.Bottom}
-                id="start-bottom"
-                style={{
-                    background: '#22c55e',
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid white',
-                }}
+        <>
+            <NodeResizer
+                color="#10b981"
+                isVisible={selected}
+                minWidth={80}
+                minHeight={80}
+                keepAspectRatio={true}
             />
-            <span style={{ position: 'relative', zIndex: 1 }}>{data.label || 'Start'}</span>
-        </div>
+            <div
+                className={`start-node ${selected ? 'selected' : ''}`}
+                style={{
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    border: selected ? '2px solid #34d399' : '2px solid #10b981',
+                    borderRadius: '50%',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: '16px',
+                    boxShadow: selected
+                        ? '0 0 20px rgba(16, 185, 129, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
+                        : '0 4px 16px rgba(0, 0, 0, 0.4)',
+                    transition: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'grab',
+                }}
+                onDoubleClick={() => setIsEditing(true)}
+            >
+                <Handle
+                    type="source"
+                    position={Position.Bottom}
+                    id="start-bottom"
+                    style={{
+                        background: '#22c55e',
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid white',
+                    }}
+                />
+                {isEditing ? (
+                    <input
+                        type="text"
+                        value={text}
+                        onChange={handleTextChange}
+                        onBlur={() => setIsEditing(false)}
+                        onKeyDown={(e) => e.key === 'Enter' && setIsEditing(false)}
+                        autoFocus
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'white',
+                            fontWeight: '600',
+                            fontSize: '16px',
+                            textAlign: 'center',
+                            width: '90%',
+                            outline: 'none',
+                        }}
+                    />
+                ) : (
+                    <span style={{ position: 'relative', zIndex: 1 }}>{text}</span>
+                )}
+            </div>
+        </>
     );
 });
 
 StartNode.displayName = 'StartNode';
 
-// End Node - Oval shape
-export const EndNode = memo(({ data, selected }: NodeProps) => {
+// End Node - Oval shape, editable, resizable
+export const EndNode = memo(({ data, selected, id }: NodeProps) => {
+    const [text, setText] = useState(data.label || 'End');
+    const [isEditing, setIsEditing] = useState(false);
+
+    const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setText(e.target.value);
+        if (data.onChange) {
+            data.onChange(id, e.target.value);
+        }
+    }, [id, data]);
+
     return (
-        <div
-            className={`end-node ${selected ? 'selected' : ''}`}
-            style={{
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                border: selected ? '2px solid #f87171' : '2px solid #ef4444',
-                borderRadius: '50%',
-                width: '120px',
-                height: '120px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '16px',
-                boxShadow: selected
-                    ? '0 0 20px rgba(239, 68, 68, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
-                    : '0 4px 16px rgba(0, 0, 0, 0.4)',
-                transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'grab',
-            }}
-        >
-            <Handle
-                type="target"
-                position={Position.Top}
-                id="end-top"
-                style={{
-                    background: '#0ea5e9',
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid white',
-                }}
+        <>
+            <NodeResizer
+                color="#ef4444"
+                isVisible={selected}
+                minWidth={80}
+                minHeight={80}
+                keepAspectRatio={true}
             />
-            <span style={{ position: 'relative', zIndex: 1 }}>{data.label || 'End'}</span>
-        </div>
+            <div
+                className={`end-node ${selected ? 'selected' : ''}`}
+                style={{
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    border: selected ? '2px solid #f87171' : '2px solid #ef4444',
+                    borderRadius: '50%',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: '600',
+                    fontSize: '16px',
+                    boxShadow: selected
+                        ? '0 0 20px rgba(239, 68, 68, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
+                        : '0 4px 16px rgba(0, 0, 0, 0.4)',
+                    transition: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'grab',
+                }}
+                onDoubleClick={() => setIsEditing(true)}
+            >
+                <Handle
+                    type="target"
+                    position={Position.Top}
+                    id="end-top"
+                    style={{
+                        background: '#0ea5e9',
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid white',
+                    }}
+                />
+                {isEditing ? (
+                    <input
+                        type="text"
+                        value={text}
+                        onChange={handleTextChange}
+                        onBlur={() => setIsEditing(false)}
+                        onKeyDown={(e) => e.key === 'Enter' && setIsEditing(false)}
+                        autoFocus
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'white',
+                            fontWeight: '600',
+                            fontSize: '16px',
+                            textAlign: 'center',
+                            width: '90%',
+                            outline: 'none',
+                        }}
+                    />
+                ) : (
+                    <span style={{ position: 'relative', zIndex: 1 }}>{text}</span>
+                )}
+            </div>
+        </>
     );
 });
 
@@ -326,10 +408,10 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                 id="condition-top"
                 style={{
                     background: '#0ea5e9',
-                    width: '18px',
-                    height: '18px',
+                    width: '16px',
+                    height: '16px',
                     border: '2px solid white',
-                    top: '-9px',
+                    top: '-8px',
                 }}
             />
             <Handle
@@ -337,11 +419,11 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                 position={Position.Bottom}
                 id="condition-bottom-true"
                 style={{
-                    background: '#10b981',
-                    width: '18px',
-                    height: '18px',
+                    background: '#22c55e',
+                    width: '16px',
+                    height: '16px',
                     border: '2px solid white',
-                    bottom: '-9px',
+                    bottom: '-8px',
                 }}
             />
             {!rightFalseUsed && (
@@ -351,10 +433,10 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                     id="condition-left-false"
                     style={{
                         background: '#ef4444',
-                        width: '18px',
-                        height: '18px',
+                        width: '16px',
+                        height: '16px',
                         border: '2px solid white',
-                        left: '-9px',
+                        left: '-8px',
                     }}
                 />
             )}
@@ -365,10 +447,10 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
                     id="condition-right-false"
                     style={{
                         background: '#ef4444',
-                        width: '18px',
-                        height: '18px',
+                        width: '16px',
+                        height: '16px',
                         border: '2px solid white',
-                        right: '-9px',
+                        right: '-8px',
                     }}
                 />
             )}

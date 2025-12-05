@@ -9,7 +9,7 @@ A modern, visual flowchart creation application built with React and ReactFlow.
 - **Node Types**: Start, End, Process, and Decision nodes
 - **Smart Connections**: Connect nodes with directional arrows
 - **Editable Labels**: Double-click nodes to edit text
-- **Resizable Nodes**: Process and Decision nodes can be resized
+- **Resizable Nodes**: All node types can be resized
 - **Auto Layout**: Automatic vertical arrangement of nodes
 
 ### File Operations
@@ -89,6 +89,7 @@ src/
 
 ## 📝 Version History
 
+- **v1.1.5** - Start/End nodes text editing and resizing, Auto Layout moved to sidebar, handle size/color unified
 - **v1.1.4** - Collapsible Controls panel with dropdown animation
 - **v1.1.3** - Auto-save to localStorage, unsaved changes warning
 - **v1.1.2** - UI reorganization, Auto Layout moved to bottom-left

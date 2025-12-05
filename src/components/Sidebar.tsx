@@ -1,4 +1,4 @@
-import { Circle, Square, Diamond, StopCircle } from 'lucide-react';
+import { Circle, Square, Diamond, StopCircle, Layers } from 'lucide-react';
 import './Sidebar.css';
 
 interface NodeTypeConfig {
@@ -6,6 +6,10 @@ interface NodeTypeConfig {
     label: string;
     icon: React.ReactNode;
     color: string;
+}
+
+interface SidebarProps {
+    onAutoLayout?: () => void;
 }
 
 const nodeTypes: NodeTypeConfig[] = [
@@ -35,7 +39,7 @@ const nodeTypes: NodeTypeConfig[] = [
     },
 ];
 
-export const Sidebar = () => {
+export const Sidebar = ({ onAutoLayout }: SidebarProps) => {
     const onDragStart = (event: React.DragEvent, nodeType: string, label: string) => {
         event.dataTransfer.setData('application/reactflow', nodeType);
         event.dataTransfer.setData('label', label);
@@ -79,9 +83,10 @@ export const Sidebar = () => {
             </div>
 
             <div className="sidebar-footer">
-                <p className="sidebar-tip">
-                    <strong>💡 Tip:</strong> Double-click nodes to edit text
-                </p>
+                <button className="auto-layout-button" onClick={onAutoLayout}>
+                    <Layers size={18} />
+                    <span>Auto Layout</span>
+                </button>
             </div>
         </aside>
     );
