@@ -12,14 +12,14 @@ import {
     BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Download, Layers, Save, FolderOpen, FileText, Copy, CheckCircle } from 'lucide-react';
+import { Download, Layers, Save, FolderOpen, FileText, Copy, CheckCircle, ChevronDown } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
 import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.3';
+const APP_VERSION = 'v1.1.4';
 const STORAGE_KEY = 'flowchart-autosave';
 
 let nodeId = 0;
@@ -34,6 +34,7 @@ export const FlowchartBuilder = () => {
     const [copySuccess, setCopySuccess] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [isControlsOpen, setIsControlsOpen] = useState(false);
 
     // Load from localStorage on mount
     useEffect(() => {
@@ -639,52 +640,55 @@ export const FlowchartBuilder = () => {
                         maskColor="rgba(0, 0, 0, 0.6)"
                     />
 
-                    <Panel position="top-right" className="control-panel">
-                        <div className="control-panel-header">
+                    <Panel position="top-right" className={`control-panel ${isControlsOpen ? 'open' : ''}`}>
+                        <div className="control-panel-header" onClick={() => setIsControlsOpen(!isControlsOpen)}>
                             <h3 className="gradient-text">Controls</h3>
+                            <ChevronDown size={18} className={`chevron-icon ${isControlsOpen ? 'rotated' : ''}`} />
                         </div>
-                        <div className="control-buttons">
-                            <button
-                                className="control-button primary"
-                                onClick={handleSaveProject}
-                                title="Save Project (.fchart)"
-                            >
-                                <Save size={18} />
-                                <span>Save</span>
-                            </button>
-                            <button
-                                className="control-button primary"
-                                onClick={handleLoadProject}
-                                title="Open Project (.fchart)"
-                            >
-                                <FolderOpen size={18} />
-                                <span>Open</span>
-                            </button>
-                            <div className="button-divider"></div>
-                            <button
-                                className="control-button"
-                                onClick={handleExportImage}
-                                title="Export as PNG"
-                            >
-                                <Download size={18} />
-                                <span>PNG</span>
-                            </button>
-                            <button
-                                className="control-button"
-                                onClick={handleExportText}
-                                title="Export as Text"
-                            >
-                                <FileText size={18} />
-                                <span>Text</span>
-                            </button>
-                            <button
-                                className={`control-button ${copySuccess ? 'success' : ''}`}
-                                onClick={handleCopyMermaid}
-                                title="Copy Mermaid Diagram"
-                            >
-                                {copySuccess ? <CheckCircle size={18} /> : <Copy size={18} />}
-                                <span>{copySuccess ? 'Copied!' : 'Mermaid'}</span>
-                            </button>
+                        <div className={`control-buttons-wrapper ${isControlsOpen ? 'open' : ''}`}>
+                            <div className="control-buttons">
+                                <button
+                                    className="control-button primary"
+                                    onClick={handleSaveProject}
+                                    title="Save Project (.fchart)"
+                                >
+                                    <Save size={18} />
+                                    <span>Save</span>
+                                </button>
+                                <button
+                                    className="control-button primary"
+                                    onClick={handleLoadProject}
+                                    title="Open Project (.fchart)"
+                                >
+                                    <FolderOpen size={18} />
+                                    <span>Open</span>
+                                </button>
+                                <div className="button-divider"></div>
+                                <button
+                                    className="control-button"
+                                    onClick={handleExportImage}
+                                    title="Export as PNG"
+                                >
+                                    <Download size={18} />
+                                    <span>PNG</span>
+                                </button>
+                                <button
+                                    className="control-button"
+                                    onClick={handleExportText}
+                                    title="Export as Text"
+                                >
+                                    <FileText size={18} />
+                                    <span>Text</span>
+                                </button>
+                                <button
+                                    className={`control-button ${copySuccess ? 'success' : ''}`}
+                                    onClick={handleCopyMermaid}
+                                    title="Copy Mermaid Diagram"
+                                >
+                                    {copySuccess ? <CheckCircle size={18} /> : <Copy size={18} />}
+                                    <span>{copySuccess ? 'Copied!' : 'Mermaid'}</span>
+                                </button>
+                            </div>
                         </div>
                     </Panel>
 

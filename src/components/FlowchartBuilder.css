@@ -110,27 +110,114 @@
     -webkit-backdrop-filter: var(--glass-backdrop);
     border-radius: 16px;
     box-shadow: var(--shadow-lg);
-    padding: 20px;
+    padding: 16px;
     min-width: 200px;
     animation: fadeIn 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .control-panel-header {
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 4px;
+    margin: -4px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.control-panel-header:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .control-panel-header h3 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: -0.3px;
+    margin: 0;
+}
+
+.chevron-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-secondary);
+}
+
+.chevron-icon.rotated {
+    transform: rotate(180deg);
+}
+
+/* Control Buttons Wrapper - Collapsible */
+.control-buttons-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.25s ease,
+        margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0;
+}
+
+.control-buttons-wrapper.open {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 16px;
 }
 
 .control-buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Drop animation for buttons */
+@keyframes dropIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.control-buttons-wrapper.open .control-button {
+    animation: dropIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+}
+
+.control-buttons-wrapper.open .control-button:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.control-buttons-wrapper.open .control-button:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.control-buttons-wrapper.open .control-button:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.control-buttons-wrapper.open .control-button:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.control-buttons-wrapper.open .control-button:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.control-buttons-wrapper.open .control-button:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+/* Also animate dividers */
+.control-buttons-wrapper.open .button-divider {
+    animation: dropIn 0.3s ease forwards;
+    opacity: 0;
+    animation-delay: 0.12s;
 }
 
 .control-button {
@@ -193,6 +280,13 @@
 .control-button span {
     position: relative;
     z-index: 1;
+}
+
+/* Button Divider */
+.button-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 0;
 }
 
 /* Node Selection Styles */

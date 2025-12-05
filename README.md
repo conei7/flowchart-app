@@ -1,109 +1,102 @@
-# 🎨 Flowchart Builder
+# Flowchart Builder
 
-A modern, beautiful web-based flowchart application built with React, TypeScript, and React Flow.
+A modern, visual flowchart creation application built with React and ReactFlow.
 
 ## ✨ Features
 
-- **Drag & Drop Interface**: Easily add nodes by dragging from the sidebar
-- **Multiple Node Types**:
-  - 🟢 **Start**: Oval-shaped node for flowchart beginning
-  - 🔴 **End**: Oval-shaped node for flowchart ending
-  - 🔵 **Process/Execution**: Rectangular, resizable node for processes
-  - 🟡 **Decision/Condition**: Diamond-shaped, resizable node for conditions
-- **Interactive Editing**:
-  - Double-click nodes to edit text
-  - Resize Process and Decision nodes
-  - Connect nodes with directional arrows
-- **Export Options**:
-  - 📸 **PNG Image**: Export as high-quality image
-  - 📄 **JSON**: Export flowchart data structure
-  - 📝 **Text**: Export with descriptive text and Mermaid diagram
-  - 📋 **Mermaid**: Copy Mermaid diagram to clipboard
-- **Premium Design**:
-  - Dark theme with glassmorphism effects
-  - Smooth animations and transitions
-  - Modern, vibrant color palette
+### Core Features
+- **Drag & Drop Interface**: Create flowcharts by dragging nodes from the sidebar
+- **Node Types**: Start, End, Process, and Decision nodes
+- **Smart Connections**: Connect nodes with directional arrows
+- **Editable Labels**: Double-click nodes to edit text
+- **Resizable Nodes**: Process and Decision nodes can be resized
+- **Auto Layout**: Automatic vertical arrangement of nodes
+
+### File Operations
+- **Save Project** (.fchart format): Save your flowchart for later editing
+- **Open Project**: Load previously saved flowcharts
+- **Export PNG**: Export the entire flowchart as an image
+- **Export Text**: Export as a text representation
+- **Copy Mermaid**: Copy Mermaid diagram syntax to clipboard
+
+### User Experience
+- **Auto-save**: Automatically saves to browser storage on every change
+- **Restore on Reload**: Your work is preserved when you refresh the page
+- **Unsaved Changes Warning**: Warns before closing if you have unsaved work
+- **Collapsible Controls**: Clean UI with dropdown controls panel
+- **Dark Theme**: Modern glassmorphism design
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js 18+
+- npm
 
 ### Installation
 
-1. Install dependencies:
 ```bash
-npm install
-```
+# Clone the repository
+git clone https://github.com/conei7/flowchart-app.git
+cd flowchart-app
 
-2. Start the development server:
-```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-3. Open your browser and navigate to the local development URL (typically `http://localhost:5173`)
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Building for Production
+### Build for Production
 
 ```bash
 npm run build
 ```
 
-The built files will be in the `dist` directory.
+## 🎨 Usage
 
-## 📖 How to Use
-
-1. **Add Nodes**: Drag node types from the left sidebar onto the canvas
-2. **Connect Nodes**: Click and drag from one node's handle to another
-3. **Edit Text**: Double-click on Process or Decision nodes to edit text
-4. **Resize Nodes**: Select a node and drag the resize handles
-5. **Export**: Use the export panel in the top-right to save your flowchart
-
-## 🎯 Keyboard Shortcuts
-
-- **Delete**: Select nodes/edges and press Delete to remove them
-- **Ctrl/Cmd + Scroll**: Zoom in/out
-- **Space + Drag**: Pan the canvas
-
-## 🛠️ Tech Stack
-
-- **React 18**: UI library
-- **TypeScript**: Type-safe development
-- **Vite**: Fast build tool
-- **@xyflow/react**: Flowchart engine
-- **html-to-image**: Image export functionality
-- **Lucide React**: Beautiful icons
+1. **Add Nodes**: Drag nodes from the left sidebar onto the canvas
+2. **Connect Nodes**: Drag from a node's handle to another node
+3. **Edit Labels**: Double-click a node to edit its text
+4. **Resize Nodes**: Use the resize handles on Process/Decision nodes
+5. **Auto Layout**: Click "Auto Layout" button (bottom-left) to arrange nodes
+6. **Save/Export**: Use the Controls panel (top-right) for file operations
 
 ## 📁 Project Structure
 
 ```
-flowchart-app/
-├── src/
-│   ├── components/
-│   │   ├── nodes/
-│   │   │   └── CustomNodes.tsx    # Node type definitions
-│   │   ├── FlowchartBuilder.tsx   # Main flowchart component
-│   │   ├── FlowchartBuilder.css
-│   │   ├── Sidebar.tsx            # Node palette
-│   │   └── Sidebar.css
-│   ├── utils/
-│   │   └── export.ts              # Export utilities
-│   ├── App.tsx                    # Main app component
-│   ├── App.css
-│   ├── main.tsx                   # Entry point
-│   └── index.css                  # Global styles
-├── index.html
-├── package.json
-├── tsconfig.json
-└── vite.config.ts
+src/
+├── components/
+│   ├── FlowchartBuilder.tsx    # Main flowchart component
+│   ├── FlowchartBuilder.css    # Styling
+│   ├── Sidebar.tsx             # Node selection sidebar
+│   └── nodes/
+│       └── CustomNodes.tsx     # Custom node definitions
+├── utils/
+│   └── export.ts               # Export functions
+└── App.tsx                     # Root component
 ```
 
-## 📝 License
+## 🔧 Technology Stack
 
-MIT
+- **React** - UI framework
+- **TypeScript** - Type safety
+- **ReactFlow** - Flowchart library
+- **Vite** - Build tool
+- **Lucide React** - Icons
+- **html-to-image** - PNG export
 
-## 🙏 Acknowledgments
+## 📝 Version History
 
-Built with ❤️ using modern web technologies
+- **v1.1.4** - Collapsible Controls panel with dropdown animation
+- **v1.1.3** - Auto-save to localStorage, unsaved changes warning
+- **v1.1.2** - UI reorganization, Auto Layout moved to bottom-left
+- **v1.1.1** - Icon improvements, Text/Mermaid export restored
+- **v1.1.0** - Project save/load feature (.fchart format)
+- **v1.0.8** - Full view PNG export
+- **v1.0.0** - Initial release
+
+## 📄 License
+
+MIT License
