@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import {
     ReactFlow,
     Background,
@@ -19,7 +19,8 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.2';
+const APP_VERSION = 'v1.1.3';
+const STORAGE_KEY = 'flowchart-autosave';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -31,6 +32,79 @@ export const FlowchartBuilder = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
     const [copySuccess, setCopySuccess] = useState(false);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+    // Load from localStorage on mount
+    useEffect(() => {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            try {
+                const { nodes: savedNodes, edges: savedEdges, nodeIdCounter } = JSON.parse(savedData);
+
+                if (savedNodes && savedNodes.length > 0) {
+                    // Restore nodes with onChange handler
+                    const restoredNodes = savedNodes.map((n: any) => ({
+                        ...n,
+                        data: {
+                            ...n.data,
+                            onChange: (id: string, newLabel: string) => {
+                                setNodes((nds: any) =>
+                                    nds.map((node: any) =>
+                                        node.id === id
+                                            ? { ...node, data: { ...node.data, label: newLabel } }
+                                            : node
+                                    )
+                                );
+                            },
+                        },
+                    }));
+
+                    setNodes(restoredNodes);
+                    setEdges(savedEdges || []);
+                    nodeId = nodeIdCounter || 0;
+                }
+            } catch (error) {
+                console.error('Error loading autosave:', error);
+            }
+        }
+        setIsInitialLoad(false);
+    }, [setNodes, setEdges]);
+
+    // Auto-save to localStorage when nodes or edges change
+    useEffect(() => {
+        if (isInitialLoad) return;
+
+        const saveData = {
+            nodes: nodes.map((n: any) => ({
+                ...n,
+                data: { label: n.data?.label || '' }
+            })),
+            edges,
+            nodeIdCounter: nodeId,
+            savedAt: new Date().toISOString()
+        };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+
+        if (nodes.length > 0 || edges.length > 0) {
+            setHasUnsavedChanges(true);
+        }
+    }, [nodes, edges, isInitialLoad]);
+
+    // Warn before closing if there are unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasUnsavedChanges && (nodes.length > 0 || edges.length > 0)) {
+                e.preventDefault();
+                e.returnValue = '保存していない変更があります。ページを離れますか？';
+                return e.returnValue;
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [hasUnsavedChanges, nodes.length, edges.length]);
 
     const isValidConnection = useCallback((connection: Connection) => {
         // 自己接続を防ぐ（同じノードへのループ）
@@ -233,6 +307,7 @@ export const FlowchartBuilder = () => {
     // Project save handler
     const handleSaveProject = useCallback(() => {
         saveProject(nodes, edges);
+        setHasUnsavedChanges(false);
     }, [nodes, edges]);
 
     // Project load handlers
