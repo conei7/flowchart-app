@@ -10,24 +10,22 @@ import {
     Connection,
     Panel,
     BackgroundVariant,
-    Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Download, FileJson, FileText, Copy, Trash2, CheckCircle, Layers, Upload, Save, FolderOpen } from 'lucide-react';
+import { Download, Trash2, Layers, Save, FolderOpen, FileText, Copy, CheckCircle } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
 import { nodeTypes } from './nodes/CustomNodes';
-import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
+import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.0';
+const APP_VERSION = 'v1.1.1';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
 
 export const FlowchartBuilder = () => {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const projectFileInputRef = useRef<HTMLInputElement>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -208,13 +206,17 @@ export const FlowchartBuilder = () => {
         [reactFlowInstance, setNodes, nodes]
     );
 
-    const handleExportImage = useCallback(() => {
-        exportAsImage('flowchart-canvas', 'flowchart.png');
-    }, []);
+    const handleExportImage = useCallback(async () => {
+        if (!reactFlowInstance) return;
 
-    const handleExportJSON = useCallback(() => {
-        exportAsJSON(nodes, edges, 'flowchart.json');
-    }, [nodes, edges]);
+        // Fit view to show all nodes before exporting
+        reactFlowInstance.fitView({ padding: 0.2 });
+
+        // Wait for the view to update
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        exportAsImage('flowchart-canvas', 'flowchart.png');
+    }, [reactFlowInstance]);
 
     const handleExportText = useCallback(() => {
         exportAsText(nodes, edges, 'flowchart.txt');
@@ -523,66 +525,6 @@ export const FlowchartBuilder = () => {
         setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 0);
     }, [nodes, edges, reactFlowInstance, setNodes]);
 
-    const handleImport = useCallback(() => {
-        fileInputRef.current?.click();
-    }, []);
-
-    const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const json = JSON.parse(e.target?.result as string);
-
-                if (json.nodes && json.edges) {
-                    const maxId = Math.max(
-                        ...json.nodes.map((n: Node) => {
-                            const match = n.id.match(/node_(\d+)/);
-                            return match ? parseInt(match[1]) : 0;
-                        }),
-                        nodeId - 1
-                    );
-                    nodeId = maxId + 1;
-
-                    const importedNodes = json.nodes.map((n: Node) => ({
-                        ...n,
-                        data: {
-                            ...n.data,
-                            onChange: (nodeId: string, newLabel: string) => {
-                                setNodes((nds) =>
-                                    nds.map((node) =>
-                                        node.id === nodeId
-                                            ? { ...node, data: { ...node.data, label: newLabel } }
-                                            : node
-                                    )
-                                );
-                            },
-                        },
-                    }));
-
-                    setNodes(importedNodes);
-                    setEdges(json.edges);
-
-                    setTimeout(() => {
-                        if (reactFlowInstance) {
-                            reactFlowInstance.fitView({ padding: 0.2 });
-                        }
-                    }, 0);
-                } else {
-                    alert('Invalid flowchart file format.');
-                }
-            } catch (error) {
-                console.error('Error importing flowchart:', error);
-                alert('Failed to import flowchart. Please check the file format.');
-            }
-        };
-        reader.readAsText(file);
-
-        event.target.value = '';
-    }, [setNodes, setEdges, reactFlowInstance]);
-
     return (
         <div className="flowchart-builder">
             <Sidebar />
@@ -662,28 +604,11 @@ export const FlowchartBuilder = () => {
                             </button>
                             <button
                                 className="control-button"
-                                onClick={handleImport}
-                                title="Import JSON"
-                            >
-                                <Upload size={18} />
-                                <span>Import</span>
-                            </button>
-                            <div className="button-divider"></div>
-                            <button
-                                className="control-button primary"
                                 onClick={handleExportImage}
                                 title="Export as PNG"
                             >
                                 <Download size={18} />
                                 <span>PNG</span>
-                            </button>
-                            <button
-                                className="control-button"
-                                onClick={handleExportJSON}
-                                title="Export as JSON"
-                            >
-                                <FileJson size={18} />
-                                <span>JSON</span>
                             </button>
                             <button
                                 className="control-button"
@@ -724,13 +649,6 @@ export const FlowchartBuilder = () => {
                         {APP_VERSION}
                     </Panel>
                 </ReactFlow>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json"
-                    style={{ display: 'none' }}
-                    onChange={handleFileChange}
-                />
                 <input
                     ref={projectFileInputRef}
                     type="file"
