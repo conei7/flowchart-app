@@ -12,14 +12,14 @@ import {
     BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Download, Trash2, Layers, Save, FolderOpen, FileText, Copy, CheckCircle } from 'lucide-react';
+import { Download, Layers, Save, FolderOpen, FileText, Copy, CheckCircle } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
 import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.1';
+const APP_VERSION = 'v1.1.2';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -229,14 +229,6 @@ export const FlowchartBuilder = () => {
             setTimeout(() => setCopySuccess(false), 2000);
         }
     }, [nodes, edges]);
-
-    const handleClearAll = useCallback(() => {
-        if (window.confirm('Are you sure you want to clear the entire flowchart?')) {
-            setNodes([]);
-            setEdges([]);
-            nodeId = 0;
-        }
-    }, [setNodes, setEdges]);
 
     // Project save handler
     const handleSaveProject = useCallback(() => {
@@ -596,14 +588,6 @@ export const FlowchartBuilder = () => {
                             <div className="button-divider"></div>
                             <button
                                 className="control-button"
-                                onClick={handleAutoLayout}
-                                title="Auto Layout"
-                            >
-                                <Layers size={18} />
-                                <span>Auto Layout</span>
-                            </button>
-                            <button
-                                className="control-button"
                                 onClick={handleExportImage}
                                 title="Export as PNG"
                             >
@@ -626,17 +610,27 @@ export const FlowchartBuilder = () => {
                                 {copySuccess ? <CheckCircle size={18} /> : <Copy size={18} />}
                                 <span>{copySuccess ? 'Copied!' : 'Mermaid'}</span>
                             </button>
-                            <div className="button-divider"></div>
-                            <button
-                                className="control-button danger"
-                                onClick={handleClearAll}
-                                title="Clear All"
-                            >
-                                <Trash2 size={18} />
-                                <span>Clear</span>
-                            </button>
                         </div>
                     </Panel>
+
+                    {/* Auto Layout Button - Bottom Left */}
+                    <Panel position="bottom-left" style={{
+                        padding: '8px 12px',
+                        background: 'rgba(15, 15, 25, 0.9)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                    }}>
+                        <button
+                            className="control-button"
+                            onClick={handleAutoLayout}
+                            title="Auto Layout"
+                            style={{ margin: 0 }}
+                        >
+                            <Layers size={18} />
+                            <span>Auto Layout</span>
+                        </button>
+                    </Panel>
+
                     <Panel position="top-left" style={{
                         padding: '6px 10px',
                         background: 'rgba(0, 0, 0, 0.5)',
