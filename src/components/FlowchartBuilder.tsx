@@ -13,14 +13,14 @@ import {
     Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Download, FileJson, FileText, Copy, Trash2, CheckCircle, Layers, Upload } from 'lucide-react';
+import { Download, FileJson, FileText, Copy, Trash2, CheckCircle, Layers, Upload, Save, FolderOpen } from 'lucide-react';
 
 import { Sidebar } from './Sidebar';
 import { nodeTypes } from './nodes/CustomNodes';
-import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard } from '../utils/export';
+import { exportAsImage, exportAsJSON, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.0.8';
+const APP_VERSION = 'v1.1.0';
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -28,6 +28,7 @@ const getNodeId = () => `node_${nodeId++}`;
 export const FlowchartBuilder = () => {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const projectFileInputRef = useRef<HTMLInputElement>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -234,6 +235,101 @@ export const FlowchartBuilder = () => {
             nodeId = 0;
         }
     }, [setNodes, setEdges]);
+
+    // Project save handler
+    const handleSaveProject = useCallback(() => {
+        saveProject(nodes, edges);
+    }, [nodes, edges]);
+
+    // Project load handlers
+    const handleLoadProject = useCallback(() => {
+        projectFileInputRef.current?.click();
+    }, []);
+
+    const handleProjectFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            const project = loadProject(content);
+
+            if (project) {
+                // Convert project nodes to ReactFlow nodes
+                const newNodes = project.nodes.map(node => ({
+                    id: node.id,
+                    type: node.type,
+                    position: node.position,
+                    style: node.size ? { width: node.size.width, height: node.size.height } : undefined,
+                    data: {
+                        label: node.data.label,
+                        onChange: (nodeId: string, newLabel: string) => {
+                            setNodes((nds: any) =>
+                                nds.map((n: any) =>
+                                    n.id === nodeId
+                                        ? { ...n, data: { ...n.data, label: newLabel } }
+                                        : n
+                                )
+                            );
+                        },
+                    },
+                }));
+
+                // Convert project edges to ReactFlow edges
+                const getEdgeColor = (sourceHandle: string | undefined) => {
+                    if (sourceHandle?.includes('true')) return '#22c55e';
+                    if (sourceHandle?.includes('false')) return '#ef4444';
+                    return '#818cf8';
+                };
+
+                const newEdges = project.edges.map(edge => ({
+                    id: edge.id,
+                    source: edge.source,
+                    target: edge.target,
+                    sourceHandle: edge.sourceHandle,
+                    targetHandle: edge.targetHandle,
+                    label: edge.label,
+                    type: 'default',
+                    animated: true,
+                    style: {
+                        strokeWidth: 2,
+                        stroke: getEdgeColor(edge.sourceHandle),
+                    },
+                    labelStyle: {
+                        fill: getEdgeColor(edge.sourceHandle),
+                        fontWeight: 700,
+                        fontSize: 13,
+                    },
+                    labelBgStyle: {
+                        fill: 'transparent',
+                        fillOpacity: 0,
+                    },
+                }));
+
+                // Update node ID counter
+                const maxId = Math.max(...project.nodes.map(n => {
+                    const match = n.id.match(/node_(\d+)/);
+                    return match ? parseInt(match[1], 10) : 0;
+                }), 0);
+                nodeId = maxId + 1;
+
+                setNodes(newNodes as any);
+                setEdges(newEdges as any);
+
+                // Fit view after loading
+                setTimeout(() => {
+                    reactFlowInstance?.fitView({ padding: 0.2 });
+                }, 100);
+            } else {
+                alert('Failed to load project file. Please check the file format.');
+            }
+        };
+        reader.readAsText(file);
+
+        // Reset file input
+        event.target.value = '';
+    }, [setNodes, setEdges, reactFlowInstance]);
 
     const handleAutoLayout = useCallback(() => {
         if (!reactFlowInstance || nodes.length === 0) return;
@@ -540,6 +636,23 @@ export const FlowchartBuilder = () => {
                         </div>
                         <div className="control-buttons">
                             <button
+                                className="control-button primary"
+                                onClick={handleSaveProject}
+                                title="Save Project (.fchart)"
+                            >
+                                <Save size={18} />
+                                <span>Save</span>
+                            </button>
+                            <button
+                                className="control-button primary"
+                                onClick={handleLoadProject}
+                                title="Open Project (.fchart)"
+                            >
+                                <FolderOpen size={18} />
+                                <span>Open</span>
+                            </button>
+                            <div className="button-divider"></div>
+                            <button
                                 className="control-button"
                                 onClick={handleAutoLayout}
                                 title="Auto Layout"
@@ -617,6 +730,13 @@ export const FlowchartBuilder = () => {
                     accept=".json"
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
+                />
+                <input
+                    ref={projectFileInputRef}
+                    type="file"
+                    accept=".fchart,.json"
+                    style={{ display: 'none' }}
+                    onChange={handleProjectFileChange}
                 />
             </div>
         </div>
