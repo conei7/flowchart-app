@@ -1,4 +1,5 @@
 .sidebar {
+    position: relative;
     width: 280px;
     height: 100%;
     background: var(--bg-secondary);
@@ -7,8 +8,9 @@
     flex-direction: column;
     padding: 24px;
     gap: 24px;
-    overflow-y: auto;
+    overflow: visible;
     animation: slideIn 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
@@ -33,6 +35,7 @@
     flex-direction: column;
     gap: 12px;
     flex: 1;
+    overflow-y: auto;
 }
 
 .node-item {
@@ -142,14 +145,15 @@
 .auto-layout-button:active {
     transform: translateY(0);
 }
+
 /* Sidebar Toggle Button */
 .sidebar-toggle {
     position: absolute;
-    top: 16px;
-    right: -12px;
-    width: 24px;
-    height: 24px;
-    background: var(--panel-bg);
+    top: 24px;
+    right: -14px;
+    width: 28px;
+    height: 28px;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 50%;
     cursor: pointer;
@@ -157,8 +161,9 @@
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    z-index: 10;
+    z-index: 100;
     transition: all var(--transition-base);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-toggle:hover {
