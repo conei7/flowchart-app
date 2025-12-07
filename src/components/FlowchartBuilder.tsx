@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.11';
+const APP_VERSION = 'v1.1.12';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Custom node data interface
@@ -45,6 +45,7 @@ export const FlowchartBuilder = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [isControlsOpen, setIsControlsOpen] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
 
     // Undo/Redo history management
     const historyRef = useRef<{ nodes: FlowchartNode[]; edges: Edge[] }[]>([]);
@@ -797,10 +798,17 @@ export const FlowchartBuilder = () => {
                 setEdges(eds => eds.map(edge => ({ ...edge, selected: true })));
             }
 
-            // Escape: Deselect all
+            // ?: Show keyboard shortcuts help
+            if (e.key === '?') {
+                e.preventDefault();
+                setShowHelp(prev => !prev);
+            }
+
+            // Escape: Deselect all and close help
             if (e.key === 'Escape') {
                 setNodes(nds => nds.map(node => ({ ...node, selected: false })));
                 setEdges(eds => eds.map(edge => ({ ...edge, selected: false })));
+                setShowHelp(false);
             }
         };
 
@@ -928,6 +936,57 @@ export const FlowchartBuilder = () => {
                     onChange={handleProjectFileChange}
                 />
             </div>
+
+            {/* Keyboard Shortcuts Help Modal */}
+            {showHelp && (
+                <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
+                    <div className="help-modal" onClick={e => e.stopPropagation()}>
+                        <h2>⌨️ キーボードショートカット</h2>
+                        <div className="help-shortcuts">
+                            <div className="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                                <span>プロジェクト保存</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>E</kbd>
+                                <span>PNG出力</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>Z</kbd>
+                                <span>元に戻す（Undo）</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>
+                                <span>やり直し（Redo）</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                                <span>選択ノードを複製</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Ctrl</kbd> + <kbd>A</kbd>
+                                <span>全選択</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Delete</kbd>
+                                <span>選択を削除</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>Escape</kbd>
+                                <span>選択解除</span>
+                            </div>
+                            <div className="shortcut-item">
+                                <kbd>?</kbd>
+                                <span>このヘルプを表示</span>
+                            </div>
+                        </div>
+                        <p className="help-tip">💡 ダブルクリックでノードのラベルを編集できます</p>
+                        <button className="help-close-btn" onClick={() => setShowHelp(false)}>
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
