@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.4';
+const APP_VERSION = 'v1.2.5';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -56,7 +56,12 @@ interface NodeSettingsState {
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
 
-export const FlowchartBuilder = () => {
+interface FlowchartBuilderProps {
+    externalShowHelp?: boolean;
+    onHelpClose?: () => void;
+}
+
+export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBuilderProps = {}) => {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const projectFileInputRef = useRef<HTMLInputElement>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<FlowchartNode>([]);
@@ -67,6 +72,19 @@ export const FlowchartBuilder = () => {
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [isControlsOpen, setIsControlsOpen] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+
+    // Sync external help state
+    useEffect(() => {
+        if (externalShowHelp !== undefined) {
+            setShowHelp(externalShowHelp);
+        }
+    }, [externalShowHelp]);
+
+    // Notify parent when help is closed
+    const handleCloseHelp = () => {
+        setShowHelp(false);
+        onHelpClose?.();
+    };
 
     // Node settings panel state
     const [nodeSettings, setNodeSettings] = useState<NodeSettingsState>({
@@ -1096,11 +1114,10 @@ export const FlowchartBuilder = () => {
 
             {/* Keyboard Shortcuts Help Modal */}
             {showHelp && (
-                <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
+                <div className="help-modal-overlay" onClick={handleCloseHelp}>
                     <div className="help-modal" onClick={e => e.stopPropagation()}>
                         <div className="help-header">
                             <h2>⌨️ Keyboard Shortcuts</h2>
-                            <span className="help-subtitle">Press <kbd>?</kbd> to toggle this help</span>
                         </div>
                         <div className="help-shortcuts">
                             <div className="shortcut-item">
@@ -1159,7 +1176,7 @@ export const FlowchartBuilder = () => {
                             </div>
                         </div>
                         <p className="help-tip">💡 Double-click a node to edit its label</p>
-                        <button className="help-close-btn" onClick={() => setShowHelp(false)}>
+                        <button className="help-close-btn" onClick={handleCloseHelp}>
                             Close
                         </button>
                     </div>

@@ -38,7 +38,13 @@
     border-left: 2px solid var(--border-color);
 }
 
-.theme-toggle-btn {
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,7 +58,7 @@
     transition: all var(--transition-base);
 }
 
-.theme-toggle-btn:hover {
+.header-action-btn:hover {
     background: var(--accent-gradient);
     border-color: transparent;
     color: white;
