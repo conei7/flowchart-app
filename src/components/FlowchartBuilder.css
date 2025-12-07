@@ -41,6 +41,20 @@
 .react-flow__edge.selected .react-flow__edge-path {
     stroke: var(--accent-secondary);
     stroke-width: 3;
+    filter: drop-shadow(0 0 4px var(--accent-secondary)) drop-shadow(0 0 8px var(--accent-secondary));
+    animation: edgeSelectedPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes edgeSelectedPulse {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 4px var(--accent-secondary)) drop-shadow(0 0 8px var(--accent-secondary));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 8px var(--accent-secondary)) drop-shadow(0 0 16px var(--accent-secondary));
+    }
 }
 
 .react-flow__handle {
@@ -290,8 +304,28 @@
 }
 
 /* Node Selection Styles */
+.react-flow__node {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
 .react-flow__node.selected {
-    box-shadow: 0 0 20px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.5);
+    box-shadow: 0 0 20px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.5),
+        0 0 40px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.3);
+    animation: nodeSelectedPulse 2s ease-in-out infinite;
+}
+
+@keyframes nodeSelectedPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.5),
+            0 0 40px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.7),
+            0 0 60px rgba(var(--primary-hue), var(--primary-sat), var(--primary-light), 0.4);
+    }
 }
 
 /* Edge Animation */
