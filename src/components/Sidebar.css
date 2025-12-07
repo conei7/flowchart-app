@@ -183,6 +183,22 @@
     flex-direction: column;
     gap: 8px;
     align-items: center;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.collapsed-nodes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.collapsed-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
 }
 
 .collapsed-node-item {
@@ -205,6 +221,7 @@
 .collapsed-node-item:active {
     cursor: grabbing;
 }
+
 /* Collapsed Auto Layout Button */
 .collapsed-divider {
     width: 32px;

@@ -146,7 +146,7 @@ export const FlowchartBuilder = () => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (hasUnsavedChanges && (nodes.length > 0 || edges.length > 0)) {
                 e.preventDefault();
-                e.returnValue = '保存していない変更があります。ページを離れますか？';
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
                 return e.returnValue;
             }
         };
@@ -937,7 +937,7 @@ export const FlowchartBuilder = () => {
                         maskColor="rgba(0, 0, 0, 0.6)"
                     />
 
-                    <Panel position="top-right" className={`control-panel ${isControlsOpen ? 'open' : ''}`}>
+                    <Panel position="top-right" className={`control-panel ${isControlsOpen ? 'open' : ''} ${nodeSettings.isOpen ? 'inspector-open' : ''}`}>
                         <div className="control-panel-header" onClick={() => setIsControlsOpen(!isControlsOpen)}>
                             <h3 className="gradient-text">Controls</h3>
                             <ChevronDown size={18} className={`chevron-icon ${isControlsOpen ? 'rotated' : ''}`} />
@@ -1031,20 +1031,20 @@ export const FlowchartBuilder = () => {
                     <div className="inspector-content">
                         <div className="inspector-section">
                             <div className="inspector-section-title">
-                                プロパティ
+                                Properties
                             </div>
                             <div className="inspector-field">
-                                <label>ラベル</label>
+                                <label>Label</label>
                                 <input
                                     type="text"
                                     value={nodeSettings.label}
                                     onChange={(e) => updateNodeProperty('label', e.target.value)}
-                                    placeholder="ノードのラベル"
+                                    placeholder="Node label"
                                 />
                             </div>
 
                             <div className="inspector-field">
-                                <label>カラー</label>
+                                <label>Color</label>
                                 <div className="color-picker-row">
                                     <input
                                         type="color"
@@ -1075,13 +1075,13 @@ export const FlowchartBuilder = () => {
 
                         <div className="inspector-section">
                             <div className="inspector-section-title">
-                                説明・メモ
+                                Description / Notes
                             </div>
                             <div className="inspector-field description-field">
                                 <textarea
                                     value={nodeSettings.description}
                                     onChange={(e) => updateNodeProperty('description', e.target.value)}
-                                    placeholder="ノードの説明やメモを入力..."
+                                    placeholder="Enter node description or notes..."
                                     rows={8}
                                 />
                             </div>
@@ -1095,48 +1095,68 @@ export const FlowchartBuilder = () => {
             {showHelp && (
                 <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
                     <div className="help-modal" onClick={e => e.stopPropagation()}>
-                        <h2>⌨️ キーボードショートカット</h2>
+                        <h2>⌨️ Keyboard Shortcuts</h2>
                         <div className="help-shortcuts">
                             <div className="shortcut-item">
-                                <kbd>Ctrl</kbd> + <kbd>S</kbd>
-                                <span>プロジェクト保存</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>S</kbd>
+                                </div>
+                                <span className="shortcut-label">Save Project</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Ctrl</kbd> + <kbd>E</kbd>
-                                <span>PNG出力</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>E</kbd>
+                                </div>
+                                <span className="shortcut-label">Export as PNG</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Ctrl</kbd> + <kbd>Z</kbd>
-                                <span>元に戻す（Undo）</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>Z</kbd>
+                                </div>
+                                <span className="shortcut-label">Undo</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>
-                                <span>やり直し（Redo）</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>Y</kbd>
+                                    <span className="key-alt">or</span>
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>Shift</kbd><span className="key-separator">+</span><kbd>Z</kbd>
+                                </div>
+                                <span className="shortcut-label">Redo</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Ctrl</kbd> + <kbd>D</kbd>
-                                <span>選択ノードを複製</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>D</kbd>
+                                </div>
+                                <span className="shortcut-label">Duplicate Selection</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Ctrl</kbd> + <kbd>A</kbd>
-                                <span>全選択</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>A</kbd>
+                                </div>
+                                <span className="shortcut-label">Select All</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Delete</kbd>
-                                <span>選択を削除</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Delete</kbd>
+                                </div>
+                                <span className="shortcut-label">Delete Selection</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>Escape</kbd>
-                                <span>選択解除</span>
+                                <div className="shortcut-keys">
+                                    <kbd>Escape</kbd>
+                                </div>
+                                <span className="shortcut-label">Deselect All</span>
                             </div>
                             <div className="shortcut-item">
-                                <kbd>?</kbd>
-                                <span>このヘルプを表示</span>
+                                <div className="shortcut-keys">
+                                    <kbd>?</kbd>
+                                </div>
+                                <span className="shortcut-label">Show this Help</span>
                             </div>
                         </div>
-                        <p className="help-tip">💡 ダブルクリックでノードのラベルを編集できます</p>
+                        <p className="help-tip">💡 Double-click a node to edit its label</p>
                         <button className="help-close-btn" onClick={() => setShowHelp(false)}>
-                            閉じる
+                            Close
                         </button>
                     </div>
                 </div>

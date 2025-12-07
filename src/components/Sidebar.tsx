@@ -54,7 +54,7 @@ export const Sidebar = ({ onAutoLayout }: SidebarProps) => {
             <button
                 className="sidebar-toggle"
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                title={isCollapsed ? '展開' : '折りたたみ'}
+                title={isCollapsed ? 'Expand' : 'Collapse'}
             >
                 {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
@@ -106,26 +106,30 @@ export const Sidebar = ({ onAutoLayout }: SidebarProps) => {
 
             {isCollapsed && (
                 <div className="collapsed-icons">
-                    {nodeTypes.map((node) => (
-                        <div
-                            key={node.type}
-                            className="collapsed-node-item"
-                            draggable
-                            onDragStart={(e) => onDragStart(e, node.type, node.label)}
-                            title={node.label}
-                            style={{ color: node.color }}
+                    <div className="collapsed-nodes">
+                        {nodeTypes.map((node) => (
+                            <div
+                                key={node.type}
+                                className="collapsed-node-item"
+                                draggable
+                                onDragStart={(e) => onDragStart(e, node.type, node.label)}
+                                title={node.label}
+                                style={{ color: node.color }}
+                            >
+                                {node.icon}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="collapsed-footer">
+                        <div className="collapsed-divider" />
+                        <button
+                            className="collapsed-auto-layout"
+                            onClick={onAutoLayout}
+                            title="Auto Layout"
                         >
-                            {node.icon}
-                        </div>
-                    ))}
-                    <div className="collapsed-divider" />
-                    <button
-                        className="collapsed-auto-layout"
-                        onClick={onAutoLayout}
-                        title="Auto Layout"
-                    >
-                        <Layers size={20} />
-                    </button>
+                            <Layers size={20} />
+                        </button>
+                    </div>
                 </div>
             )}
         </aside>
