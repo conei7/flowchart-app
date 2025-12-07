@@ -402,27 +402,31 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                     height: '100%',
                     background: getGradient(nodeColor),
                     clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                    border: 'none',
                     boxShadow: selected
                         ? `0 0 20px ${nodeColor}80, 0 4px 16px rgba(0, 0, 0, 0.4)`
                         : '0 4px 16px rgba(0, 0, 0, 0.4)',
-                    transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
             />
-            {/* Border overlay for selected state */}
-            {selected && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                        clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                        border: `3px solid ${nodeColor}`,
-                        boxSizing: 'border-box',
-                        pointerEvents: 'none',
-                    }}
+            {/* SVG Border - always visible like other node types */}
+            <svg
+                style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                }}
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+            >
+                <path
+                    d="M50,0 L100,50 L50,100 L0,50 Z"
+                    fill="none"
+                    stroke={nodeColor}
+                    strokeWidth="2"
+                    vectorEffect="non-scaling-stroke"
                 />
-            )}
+            </svg>
             <div
                 style={{
                     position: 'absolute',

@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.11';
+const APP_VERSION = 'v1.2.12';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type

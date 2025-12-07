@@ -310,7 +310,8 @@
 
 /* Node Selection Styles */
 .react-flow__node {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* Only animate box-shadow, not transform - to avoid drag latency */
+    transition: box-shadow 0.2s ease;
 }
 
 .react-flow__node.selected {
