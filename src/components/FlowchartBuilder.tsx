@@ -300,26 +300,25 @@ export const FlowchartBuilder = () => {
         });
     }, []);
 
-    // Save node settings
-    const handleSaveNodeSettings = useCallback(() => {
-        if (!nodeSettings.nodeId) return;
+    // Update node settings in real-time (auto-save)
+    const updateNodeProperty = useCallback((property: 'label' | 'color' | 'description', value: string) => {
+        setNodeSettings(prev => ({ ...prev, [property]: value }));
 
-        setNodes(nds => nds.map(n =>
-            n.id === nodeSettings.nodeId
-                ? {
-                    ...n,
-                    data: {
-                        ...n.data,
-                        label: nodeSettings.label,
-                        color: nodeSettings.color,
-                        description: nodeSettings.description,
+        // Apply change to the actual node immediately
+        if (nodeSettings.nodeId) {
+            setNodes(nds => nds.map(n =>
+                n.id === nodeSettings.nodeId
+                    ? {
+                        ...n,
+                        data: {
+                            ...n.data,
+                            [property]: value,
+                        }
                     }
-                }
-                : n
-        ));
-
-        setNodeSettings(prev => ({ ...prev, isOpen: false, nodeId: null }));
-    }, [nodeSettings, setNodes]);
+                    : n
+            ));
+        }
+    }, [nodeSettings.nodeId, setNodes]);
 
     // Close node settings panel
     const handleCloseNodeSettings = useCallback(() => {
@@ -1041,7 +1040,7 @@ export const FlowchartBuilder = () => {
                                 <input
                                     type="text"
                                     value={nodeSettings.label}
-                                    onChange={(e) => setNodeSettings(prev => ({ ...prev, label: e.target.value }))}
+                                    onChange={(e) => updateNodeProperty('label', e.target.value)}
                                     placeholder="ノードのラベル"
                                 />
                             </div>
@@ -1052,13 +1051,13 @@ export const FlowchartBuilder = () => {
                                     <input
                                         type="color"
                                         value={nodeSettings.color}
-                                        onChange={(e) => setNodeSettings(prev => ({ ...prev, color: e.target.value }))}
+                                        onChange={(e) => updateNodeProperty('color', e.target.value)}
                                         className="color-picker"
                                     />
                                     <input
                                         type="text"
                                         value={nodeSettings.color}
-                                        onChange={(e) => setNodeSettings(prev => ({ ...prev, color: e.target.value }))}
+                                        onChange={(e) => updateNodeProperty('color', e.target.value)}
                                         className="color-text"
                                         placeholder="#000000"
                                     />
@@ -1069,7 +1068,7 @@ export const FlowchartBuilder = () => {
                                             key={color}
                                             className={`color-preset ${nodeSettings.color === color ? 'active' : ''}`}
                                             style={{ background: color }}
-                                            onClick={() => setNodeSettings(prev => ({ ...prev, color }))}
+                                            onClick={() => updateNodeProperty('color', color)}
                                         />
                                     ))}
                                 </div>
@@ -1080,20 +1079,14 @@ export const FlowchartBuilder = () => {
                             <div className="inspector-section-title">
                                 説明・メモ
                             </div>
-                            <div className="inspector-field">
+                            <div className="inspector-field description-field">
                                 <textarea
                                     value={nodeSettings.description}
-                                    onChange={(e) => setNodeSettings(prev => ({ ...prev, description: e.target.value }))}
+                                    onChange={(e) => updateNodeProperty('description', e.target.value)}
                                     placeholder="ノードの説明やメモを入力..."
-                                    rows={4}
+                                    rows={8}
                                 />
                             </div>
-                        </div>
-
-                        <div className="inspector-actions">
-                            <button className="inspector-btn save" onClick={handleSaveNodeSettings}>
-                                💾 保存
-                            </button>
                         </div>
                     </div>
                 )}
