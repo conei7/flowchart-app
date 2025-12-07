@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.9';
+const APP_VERSION = 'v1.1.10';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Custom node data interface
@@ -45,6 +45,12 @@ export const FlowchartBuilder = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [isControlsOpen, setIsControlsOpen] = useState(false);
+
+    // Undo/Redo history management
+    const historyRef = useRef<{ nodes: FlowchartNode[]; edges: Edge[] }[]>([]);
+    const historyIndexRef = useRef(-1);
+    const isUndoRedoActionRef = useRef(false);
+    const MAX_HISTORY = 50;
 
     // Load from localStorage on mount
     useEffect(() => {
@@ -116,6 +122,105 @@ export const FlowchartBuilder = () => {
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [hasUnsavedChanges, nodes.length, edges.length]);
+
+    // Save to history when nodes or edges change (for undo/redo)
+    useEffect(() => {
+        if (isInitialLoad || isUndoRedoActionRef.current) {
+            isUndoRedoActionRef.current = false;
+            return;
+        }
+
+        // Create a snapshot of current state (without onChange handlers for comparison)
+        const currentState = {
+            nodes: nodes.map(n => ({
+                ...n,
+                data: { label: n.data?.label || '' }
+            })) as FlowchartNode[],
+            edges: [...edges]
+        };
+
+        // Don't save if nothing changed
+        if (historyRef.current.length > 0) {
+            const lastState = historyRef.current[historyIndexRef.current];
+            if (lastState &&
+                JSON.stringify(lastState.nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }))) ===
+                JSON.stringify(currentState.nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }))) &&
+                JSON.stringify(lastState.edges) === JSON.stringify(currentState.edges)) {
+                return;
+            }
+        }
+
+        // Remove any future states if we're not at the end
+        if (historyIndexRef.current < historyRef.current.length - 1) {
+            historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+        }
+
+        // Add new state
+        historyRef.current.push(currentState);
+        historyIndexRef.current = historyRef.current.length - 1;
+
+        // Limit history size
+        if (historyRef.current.length > MAX_HISTORY) {
+            historyRef.current.shift();
+            historyIndexRef.current--;
+        }
+    }, [nodes, edges, isInitialLoad]);
+
+    // Undo handler
+    const handleUndo = useCallback(() => {
+        if (historyIndexRef.current <= 0) return;
+
+        historyIndexRef.current--;
+        const previousState = historyRef.current[historyIndexRef.current];
+
+        if (previousState) {
+            isUndoRedoActionRef.current = true;
+            // Restore nodes with onChange handler
+            const restoredNodes = previousState.nodes.map(n => ({
+                ...n,
+                data: {
+                    ...n.data,
+                    onChange: (nodeId: string, newLabel: string) => {
+                        setNodes(nds => nds.map(node =>
+                            node.id === nodeId
+                                ? { ...node, data: { ...node.data, label: newLabel } }
+                                : node
+                        ));
+                    },
+                },
+            }));
+            setNodes(restoredNodes);
+            setEdges(previousState.edges);
+        }
+    }, [setNodes, setEdges]);
+
+    // Redo handler
+    const handleRedo = useCallback(() => {
+        if (historyIndexRef.current >= historyRef.current.length - 1) return;
+
+        historyIndexRef.current++;
+        const nextState = historyRef.current[historyIndexRef.current];
+
+        if (nextState) {
+            isUndoRedoActionRef.current = true;
+            // Restore nodes with onChange handler
+            const restoredNodes = nextState.nodes.map(n => ({
+                ...n,
+                data: {
+                    ...n.data,
+                    onChange: (nodeId: string, newLabel: string) => {
+                        setNodes(nds => nds.map(node =>
+                            node.id === nodeId
+                                ? { ...node, data: { ...node.data, label: newLabel } }
+                                : node
+                        ));
+                    },
+                },
+            }));
+            setNodes(restoredNodes);
+            setEdges(nextState.edges);
+        }
+    }, [setNodes, setEdges]);
 
     const isValidConnection = useCallback((connection: Connection) => {
         // 自己接続を防ぐ（同じノードへのループ）
@@ -635,6 +740,18 @@ export const FlowchartBuilder = () => {
                 handleExportImage();
             }
 
+            // Ctrl/Cmd + Z: Undo
+            if (modKey && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                handleUndo();
+            }
+
+            // Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y: Redo
+            if ((modKey && e.key === 'z' && e.shiftKey) || (modKey && e.key === 'y')) {
+                e.preventDefault();
+                handleRedo();
+            }
+
             // Ctrl/Cmd + A: Select all nodes
             if (modKey && e.key === 'a') {
                 e.preventDefault();
@@ -651,7 +768,8 @@ export const FlowchartBuilder = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleSaveProject, handleExportImage, setNodes, setEdges]);
+    }, [handleSaveProject, handleExportImage, handleUndo, handleRedo, setNodes, setEdges]);
+
 
     return (
         <div className="flowchart-builder">
