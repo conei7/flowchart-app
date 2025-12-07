@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.5';
+const APP_VERSION = 'v1.1.9';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Custom node data interface
@@ -611,6 +611,47 @@ export const FlowchartBuilder = () => {
         setNodes(updatedNodes);
         setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 0);
     }, [nodes, edges, reactFlowInstance, setNodes]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't trigger shortcuts when typing in input/textarea
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
+            const isMac = navigator.platform.toUpperCase().includes('MAC');
+            const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+            // Ctrl/Cmd + S: Save project
+            if (modKey && e.key === 's') {
+                e.preventDefault();
+                handleSaveProject();
+            }
+
+            // Ctrl/Cmd + E: Export as PNG
+            if (modKey && e.key === 'e') {
+                e.preventDefault();
+                handleExportImage();
+            }
+
+            // Ctrl/Cmd + A: Select all nodes
+            if (modKey && e.key === 'a') {
+                e.preventDefault();
+                setNodes(nds => nds.map(node => ({ ...node, selected: true })));
+                setEdges(eds => eds.map(edge => ({ ...edge, selected: true })));
+            }
+
+            // Escape: Deselect all
+            if (e.key === 'Escape') {
+                setNodes(nds => nds.map(node => ({ ...node, selected: false })));
+                setEdges(eds => eds.map(edge => ({ ...edge, selected: false })));
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleSaveProject, handleExportImage, setNodes, setEdges]);
 
     return (
         <div className="flowchart-builder">
