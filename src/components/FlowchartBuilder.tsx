@@ -295,13 +295,21 @@ export const FlowchartBuilder = () => {
     const handleExportImage = useCallback(async () => {
         if (!reactFlowInstance) return;
 
+        // Save current viewport state before changing it
+        const currentViewport = reactFlowInstance.getViewport();
+
         // Fit view to show all nodes before exporting
         reactFlowInstance.fitView({ padding: 0.2 });
 
         // Wait for the view to update
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        exportAsImage('flowchart-canvas', 'flowchart.png');
+        // Export the image
+        await exportAsImage('flowchart-canvas', 'flowchart.png');
+
+        // Restore the original viewport state
+        await new Promise(resolve => setTimeout(resolve, 50));
+        reactFlowInstance.setViewport(currentViewport, { duration: 200 });
     }, [reactFlowInstance]);
 
     const handleExportText = useCallback(() => {
