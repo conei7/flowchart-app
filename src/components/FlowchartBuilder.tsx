@@ -43,14 +43,19 @@ interface FlowchartNodeData extends Record<string, unknown> {
 
 type FlowchartNode = Node<FlowchartNodeData>;
 
-// Node settings panel state
-interface NodeSettingsState {
+// Inspector panel state (supports both nodes and edges)
+interface InspectorState {
     isOpen: boolean;
-    nodeId: string | null;
+    type: 'node' | 'edge' | null;
+    id: string | null;
+    // Node properties
     label: string;
     color: string;
     description: string;
     nodeType: string;
+    // Edge properties
+    sourceNode?: string;
+    targetNode?: string;
 }
 
 let nodeId = 0;
@@ -86,14 +91,17 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
         onHelpClose?.();
     };
 
-    // Node settings panel state
-    const [nodeSettings, setNodeSettings] = useState<NodeSettingsState>({
+    // Inspector panel state (supports nodes and edges)
+    const [nodeSettings, setNodeSettings] = useState<InspectorState>({
         isOpen: false,
-        nodeId: null,
+        type: null,
+        id: null,
         label: '',
         color: '',
         description: '',
         nodeType: '',
+        sourceNode: '',
+        targetNode: '',
     });
 
     // Undo/Redo history management
@@ -310,22 +318,25 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
 
         setNodeSettings({
             isOpen: true,
-            nodeId: node.id,
+            type: 'node',
+            id: node.id,
             label: node.data?.label || '',
             color: (node.data?.color as string) || DEFAULT_NODE_COLORS[node.type || 'execution'] || '#3b82f6',
             description: (node.data?.description as string) || '',
             nodeType: node.type || 'execution',
+            sourceNode: '',
+            targetNode: '',
         });
     }, []);
 
     // Update node settings in real-time (auto-save)
     const updateNodeProperty = useCallback((property: 'label' | 'color' | 'description', value: string) => {
-        setNodeSettings(prev => ({ ...prev, [property]: value }));
+        setNodeSettings((prev: InspectorState) => ({ ...prev, [property]: value }));
 
         // Apply change to the actual node immediately
-        if (nodeSettings.nodeId) {
+        if (nodeSettings.id && nodeSettings.type === 'node') {
             setNodes(nds => nds.map(n =>
-                n.id === nodeSettings.nodeId
+                n.id === nodeSettings.id
                     ? {
                         ...n,
                         data: {
@@ -336,11 +347,11 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                     : n
             ));
         }
-    }, [nodeSettings.nodeId, setNodes]);
+    }, [nodeSettings.id, nodeSettings.type, setNodes]);
 
     // Close node settings panel
     const handleCloseNodeSettings = useCallback(() => {
-        setNodeSettings(prev => ({ ...prev, isOpen: false, nodeId: null }));
+        setNodeSettings((prev: InspectorState) => ({ ...prev, isOpen: false, id: null, type: null }));
     }, []);
 
     const isValidConnection = useCallback((connection: Connection) => {

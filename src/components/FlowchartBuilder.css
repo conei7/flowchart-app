@@ -937,3 +937,30 @@
 .custom-minimap.inspector-open {
     right: 310px !important;
 }
+/* Enhanced selection styles */
+.start-node.selected,
+.end-node.selected,
+.execution-node.selected,
+.condition-node.selected {
+    box-shadow: 0 0 0 3px var(--accent-primary), 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+    transform: scale(1.02);
+}
+
+/* Animated selection glow */
+@keyframes selectionPulse {
+    0%, 100% { box-shadow: 0 0 0 3px var(--accent-primary), 0 8px 24px rgba(99, 102, 241, 0.4); }
+    50% { box-shadow: 0 0 0 5px var(--accent-primary), 0 8px 32px rgba(99, 102, 241, 0.6); }
+}
+
+.react-flow__node.selected .start-node,
+.react-flow__node.selected .end-node,
+.react-flow__node.selected .execution-node,
+.react-flow__node.selected .condition-node {
+    animation: selectionPulse 2s ease-in-out infinite;
+}
+
+/* Edge selection styles */
+.react-flow__edge.selected .react-flow__edge-path {
+    stroke: var(--accent-primary) !important;
+    stroke-width: 3px !important;
+}
