@@ -118,6 +118,14 @@ export const Sidebar = ({ onAutoLayout }: SidebarProps) => {
                             {node.icon}
                         </div>
                     ))}
+                    <div className="collapsed-divider" />
+                    <button
+                        className="collapsed-auto-layout"
+                        onClick={onAutoLayout}
+                        title="Auto Layout"
+                    >
+                        <Layers size={20} />
+                    </button>
                 </div>
             )}
         </aside>

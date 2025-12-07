@@ -874,3 +874,12 @@
     background: rgba(245, 158, 11, 0.2);
     color: #f59e0b;
 }
+
+/* MiniMap shift when inspector is open */
+.custom-minimap {
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.custom-minimap.inspector-open {
+    right: 310px !important;
+}

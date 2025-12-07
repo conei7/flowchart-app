@@ -924,7 +924,7 @@ export const FlowchartBuilder = () => {
                         showInteractive={false}
                     />
                     <MiniMap
-                        className="custom-minimap"
+                        className={`custom-minimap ${nodeSettings.isOpen ? 'inspector-open' : ''}`}
                         nodeColor={(node) => {
                             switch (node.type) {
                                 case 'start': return '#10b981';
