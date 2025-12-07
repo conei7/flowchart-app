@@ -38,26 +38,26 @@
     --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Light Theme */
+/* Light Theme - 目に優しいソフトな色合い */
 [data-theme="light"] {
-    --bg-primary: hsl(220, 20%, 97%);
-    --bg-secondary: hsl(220, 15%, 92%);
-    --bg-tertiary: hsl(220, 12%, 88%);
-    --bg-hover: hsl(220, 10%, 85%);
+    --bg-primary: hsl(220, 14%, 94%);
+    --bg-secondary: hsl(220, 12%, 90%);
+    --bg-tertiary: hsl(220, 10%, 86%);
+    --bg-hover: hsl(220, 10%, 82%);
 
-    --text-primary: hsl(220, 20%, 15%);
-    --text-secondary: hsl(220, 10%, 40%);
-    --text-tertiary: hsl(220, 8%, 55%);
+    --text-primary: hsl(220, 25%, 20%);
+    --text-secondary: hsl(220, 15%, 45%);
+    --text-tertiary: hsl(220, 10%, 55%);
 
-    --border-color: hsl(220, 15%, 82%);
+    --border-color: hsl(220, 12%, 78%);
 
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
 
     /* Glassmorphism for light mode */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(0, 0, 0, 0.06);
 }
 
 * {

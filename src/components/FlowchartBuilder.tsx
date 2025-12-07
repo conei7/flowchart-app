@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.0';
+const APP_VERSION = 'v1.2.4';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -472,7 +472,10 @@ export const FlowchartBuilder = () => {
             if (type === 'start') {
                 const existingStart = nodes.find((n: any) => n.type === 'start');
                 if (existingStart) {
-                    alert('⚠️ Warning: A Start node already exists. Multiple Start nodes may cause confusion.');
+                    const confirmAdd = window.confirm('⚠️ A Start node already exists.\n\nMultiple Start nodes may cause confusion in the flowchart.\n\nDo you want to add another Start node anyway?');
+                    if (!confirmAdd) {
+                        return; // User cancelled, don't add the node
+                    }
                 }
             }
 
@@ -1095,7 +1098,10 @@ export const FlowchartBuilder = () => {
             {showHelp && (
                 <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
                     <div className="help-modal" onClick={e => e.stopPropagation()}>
-                        <h2>⌨️ Keyboard Shortcuts</h2>
+                        <div className="help-header">
+                            <h2>⌨️ Keyboard Shortcuts</h2>
+                            <span className="help-subtitle">Press <kbd>?</kbd> to toggle this help</span>
+                        </div>
                         <div className="help-shortcuts">
                             <div className="shortcut-item">
                                 <div className="shortcut-keys">
@@ -1118,8 +1124,6 @@ export const FlowchartBuilder = () => {
                             <div className="shortcut-item">
                                 <div className="shortcut-keys">
                                     <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>Y</kbd>
-                                    <span className="key-alt">or</span>
-                                    <kbd>Ctrl</kbd><span className="key-separator">+</span><kbd>Shift</kbd><span className="key-separator">+</span><kbd>Z</kbd>
                                 </div>
                                 <span className="shortcut-label">Redo</span>
                             </div>
