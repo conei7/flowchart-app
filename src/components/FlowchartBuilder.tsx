@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.5';
+const APP_VERSION = 'v1.2.8';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -954,6 +954,21 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                     <Controls
                         className="custom-controls"
                         showInteractive={false}
+                        onFitView={() => {
+                            if (reactFlowInstance) {
+                                reactFlowInstance.fitView({ padding: 0.2 });
+                                // インスペクター開いているときはビューポートを左にずらす
+                                if (nodeSettings.isOpen) {
+                                    setTimeout(() => {
+                                        const viewport = reactFlowInstance.getViewport();
+                                        reactFlowInstance.setViewport({
+                                            ...viewport,
+                                            x: viewport.x - 150, // インスペクター幅の半分
+                                        });
+                                    }, 50);
+                                }
+                            }
+                        }}
                     />
                     <MiniMap
                         className={`custom-minimap ${nodeSettings.isOpen ? 'inspector-open' : ''}`}

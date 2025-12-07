@@ -372,6 +372,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
 
     return (
         <div
+            className={`condition-node ${selected ? 'selected' : ''}`}
             style={{
                 position: 'relative',
                 width: '100%',

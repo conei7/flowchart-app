@@ -1,4 +1,4 @@
-.flowchart-builder {
+﻿.flowchart-builder {
     display: flex;
     width: 100vw;
     height: calc(100vh - 52px);
@@ -937,30 +937,30 @@
 .custom-minimap.inspector-open {
     right: 310px !important;
 }
-/* Enhanced selection styles */
+
+/* Enhanced selection styles - unified drop-shadow approach */
+@keyframes selectionPulse {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 16px rgba(99, 102, 241, 0.4));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 12px var(--accent-primary)) drop-shadow(0 0 24px rgba(99, 102, 241, 0.6));
+    }
+}
+
 .start-node.selected,
 .end-node.selected,
 .execution-node.selected,
 .condition-node.selected {
-    box-shadow: 0 0 0 3px var(--accent-primary), 0 8px 24px rgba(99, 102, 241, 0.4) !important;
-    transform: scale(1.02);
-}
-
-/* Animated selection glow */
-@keyframes selectionPulse {
-    0%, 100% { box-shadow: 0 0 0 3px var(--accent-primary), 0 8px 24px rgba(99, 102, 241, 0.4); }
-    50% { box-shadow: 0 0 0 5px var(--accent-primary), 0 8px 32px rgba(99, 102, 241, 0.6); }
-}
-
-.react-flow__node.selected .start-node,
-.react-flow__node.selected .end-node,
-.react-flow__node.selected .execution-node,
-.react-flow__node.selected .condition-node {
+    filter: drop-shadow(0 0 8px var(--accent-primary)) drop-shadow(0 0 16px rgba(99, 102, 241, 0.4));
     animation: selectionPulse 2s ease-in-out infinite;
 }
 
-/* Edge selection styles */
+/* Edge selection styles - preserve original colors with glow effect */
 .react-flow__edge.selected .react-flow__edge-path {
-    stroke: var(--accent-primary) !important;
-    stroke-width: 3px !important;
+    stroke-width: 4px !important;
+    filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 12px currentColor);
 }

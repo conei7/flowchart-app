@@ -201,6 +201,7 @@ textarea {
     backdrop-filter: var(--glass-backdrop);
     -webkit-backdrop-filter: var(--glass-backdrop);
 }
+
 /* Light mode specific fixes */
 [data-theme="light"] .help-tip {
     background: rgba(99, 102, 241, 0.1);
@@ -208,14 +209,20 @@ textarea {
     border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-[data-theme="light"] .control-btn.secondary {
+[data-theme="light"] .control-button {
     background: white;
     border: 1px solid var(--border-color);
     color: var(--text-primary);
 }
 
-[data-theme="light"] .control-btn.secondary:hover {
+[data-theme="light"] .control-button:hover {
     background: var(--bg-hover);
+}
+
+[data-theme="light"] .control-button.primary {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
 }
 
 [data-theme="light"] .sidebar-toggle {
