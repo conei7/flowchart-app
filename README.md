@@ -2,6 +2,8 @@
 
 A modern, visual flowchart creation application built with React and ReactFlow.
 
+**[🚀 Live Demo](https://conei7.github.io/flowchart-app/)**
+
 ## ✨ Features
 
 ### Core Features
