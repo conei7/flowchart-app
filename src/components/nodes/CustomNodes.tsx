@@ -4,16 +4,34 @@ import { Handle, Position, NodeProps, NodeResizer, useEdges, Node } from '@xyflo
 // Custom node data interface
 interface CustomNodeData extends Record<string, unknown> {
     label: string;
+    color?: string;
+    description?: string;
     onChange?: (id: string, newLabel: string) => void;
+    onOpenSettings?: (id: string) => void;
 }
 
 // Custom node type with our data
 type CustomNode = Node<CustomNodeData>;
 
+// Helper function to generate gradient from color
+const getGradient = (color: string) => {
+    // Darken the color for gradient end
+    const darkenColor = (hex: string, percent: number) => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.max(0, (num >> 16) - amt);
+        const G = Math.max(0, ((num >> 8) & 0x00FF) - amt);
+        const B = Math.max(0, (num & 0x0000FF) - amt);
+        return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+    };
+    return `linear-gradient(135deg, ${color}, ${darkenColor(color, 15)})`;
+};
+
 // Start Node - Oval shape, editable, resizable
 export const StartNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'Start');
     const [isEditing, setIsEditing] = useState(false);
+    const nodeColor = (data.color as string) || '#10b981';
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value);
@@ -22,10 +40,17 @@ export const StartNode = memo(({ data, selected, id }: NodeProps<CustomNode>) =>
         }
     }, [id, data]);
 
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        if (data.onOpenSettings) {
+            data.onOpenSettings(id);
+        }
+    }, [id, data]);
+
     return (
         <>
             <NodeResizer
-                color="#10b981"
+                color={nodeColor}
                 isVisible={selected}
                 minWidth={80}
                 minHeight={80}
@@ -34,8 +59,8 @@ export const StartNode = memo(({ data, selected, id }: NodeProps<CustomNode>) =>
             <div
                 className={`start-node ${selected ? 'selected' : ''}`}
                 style={{
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                    border: selected ? '2px solid #34d399' : '2px solid #10b981',
+                    background: getGradient(nodeColor),
+                    border: selected ? `2px solid ${nodeColor}` : `2px solid ${nodeColor}`,
                     borderRadius: '50%',
                     width: '100%',
                     height: '100%',
@@ -46,19 +71,21 @@ export const StartNode = memo(({ data, selected, id }: NodeProps<CustomNode>) =>
                     fontWeight: '600',
                     fontSize: '16px',
                     boxShadow: selected
-                        ? '0 0 20px rgba(16, 185, 129, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
+                        ? `0 0 20px ${nodeColor}80, 0 4px 16px rgba(0, 0, 0, 0.4)`
                         : '0 4px 16px rgba(0, 0, 0, 0.4)',
                     transition: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: 'grab',
                 }}
                 onDoubleClick={() => setIsEditing(true)}
+                onContextMenu={handleContextMenu}
+                title={data.description ? `${data.description}` : '右クリックで設定'}
             >
                 <Handle
                     type="source"
                     position={Position.Bottom}
                     id="start-bottom"
                     style={{
-                        background: '#22c55e',
+                        background: nodeColor,
                         width: '16px',
                         height: '16px',
                         border: '2px solid white',
@@ -97,6 +124,7 @@ StartNode.displayName = 'StartNode';
 export const EndNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'End');
     const [isEditing, setIsEditing] = useState(false);
+    const nodeColor = (data.color as string) || '#ef4444';
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value);
@@ -105,10 +133,17 @@ export const EndNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
         }
     }, [id, data]);
 
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        if (data.onOpenSettings) {
+            data.onOpenSettings(id);
+        }
+    }, [id, data]);
+
     return (
         <>
             <NodeResizer
-                color="#ef4444"
+                color={nodeColor}
                 isVisible={selected}
                 minWidth={80}
                 minHeight={80}
@@ -117,8 +152,8 @@ export const EndNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
             <div
                 className={`end-node ${selected ? 'selected' : ''}`}
                 style={{
-                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                    border: selected ? '2px solid #f87171' : '2px solid #ef4444',
+                    background: getGradient(nodeColor),
+                    border: selected ? `2px solid ${nodeColor}` : `2px solid ${nodeColor}`,
                     borderRadius: '50%',
                     width: '100%',
                     height: '100%',
@@ -129,12 +164,14 @@ export const EndNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
                     fontWeight: '600',
                     fontSize: '16px',
                     boxShadow: selected
-                        ? '0 0 20px rgba(239, 68, 68, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
+                        ? `0 0 20px ${nodeColor}80, 0 4px 16px rgba(0, 0, 0, 0.4)`
                         : '0 4px 16px rgba(0, 0, 0, 0.4)',
                     transition: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                     cursor: 'grab',
                 }}
                 onDoubleClick={() => setIsEditing(true)}
+                onContextMenu={handleContextMenu}
+                title={data.description ? `${data.description}` : '右クリックで設定'}
             >
                 <Handle
                     type="target"
@@ -180,6 +217,7 @@ EndNode.displayName = 'EndNode';
 export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'Process');
     const [isEditing, setIsEditing] = useState(false);
+    const nodeColor = (data.color as string) || '#3b82f6';
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);
@@ -192,6 +230,13 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
         e.stopPropagation();
     }, []);
 
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        if (data.onOpenSettings) {
+            data.onOpenSettings(id);
+        }
+    }, [id, data]);
+
     return (
         <div
             className={`execution-node ${selected ? 'selected' : ''}`}
@@ -199,8 +244,8 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                border: selected ? '2px solid #60a5fa' : '2px solid #3b82f6',
+                background: getGradient(nodeColor),
+                border: selected ? `2px solid ${nodeColor}` : `2px solid ${nodeColor}`,
                 borderRadius: '8px',
                 padding: '12px 16px',
                 color: 'white',
@@ -209,12 +254,14 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                 minHeight: '80px',
                 boxSizing: 'border-box',
                 boxShadow: selected
-                    ? '0 0 20px rgba(59, 130, 246, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent'
+                    ? `0 0 20px ${nodeColor}80, 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent`
                     : '0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 10px transparent',
                 transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: isEditing ? 'text' : 'grab',
             }}
             onDoubleClick={() => setIsEditing(true)}
+            onContextMenu={handleContextMenu}
+            title={data.description ? `${data.description}` : '右クリックで設定'}
         >
             <NodeResizer
                 isVisible={selected}
@@ -224,7 +271,7 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                     width: '10px',
                     height: '10px',
                     borderRadius: '50%',
-                    background: '#60a5fa',
+                    background: nodeColor,
                 }}
             />
             {/* Top handle - input only */}
@@ -300,6 +347,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
     const [text, setText] = useState(data.label || 'Condition?');
     const [isEditing, setIsEditing] = useState(false);
     const edges = useEdges();
+    const nodeColor = (data.color as string) || '#f59e0b';
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);
@@ -311,6 +359,13 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
     const handleTextAreaMouseDown = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
     }, []);
+
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        if (data.onOpenSettings) {
+            data.onOpenSettings(id);
+        }
+    }, [id, data]);
 
     const leftFalseUsed = edges.some(e => e.source === id && e.sourceHandle === 'condition-left-false');
     const rightFalseUsed = edges.some(e => e.source === id && e.sourceHandle === 'condition-right-false');
@@ -325,6 +380,8 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                 cursor: isEditing ? 'text' : 'grab',
             }}
             onDoubleClick={() => setIsEditing(true)}
+            onContextMenu={handleContextMenu}
+            title={data.description ? `${data.description}` : '右クリックで設定'}
         >
             <NodeResizer
                 isVisible={selected}
@@ -334,7 +391,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                     width: '10px',
                     height: '10px',
                     borderRadius: '50%',
-                    background: '#fbbf24',
+                    background: nodeColor,
                 }}
             />
             <div
@@ -342,11 +399,11 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                     position: 'absolute',
                     width: '100%',
                     height: '100%',
-                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    background: getGradient(nodeColor),
                     clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
                     border: 'none',
                     boxShadow: selected
-                        ? '0 0 20px rgba(245, 158, 11, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4)'
+                        ? `0 0 20px ${nodeColor}80, 0 4px 16px rgba(0, 0, 0, 0.4)`
                         : '0 4px 16px rgba(0, 0, 0, 0.4)',
                     transition: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
@@ -359,7 +416,7 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
                         width: '100%',
                         height: '100%',
                         clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                        border: '3px solid #fbbf24',
+                        border: `3px solid ${nodeColor}`,
                         boxSizing: 'border-box',
                         pointerEvents: 'none',
                     }}

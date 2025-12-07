@@ -21,16 +21,37 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.12';
+const APP_VERSION = 'v1.2.0';
 const STORAGE_KEY = 'flowchart-autosave';
+
+// Default colors for each node type
+const DEFAULT_NODE_COLORS: Record<string, string> = {
+    start: '#10b981',
+    end: '#ef4444',
+    execution: '#3b82f6',
+    condition: '#f59e0b',
+};
 
 // Custom node data interface
 interface FlowchartNodeData extends Record<string, unknown> {
     label: string;
+    color?: string;
+    description?: string;
     onChange?: (id: string, newLabel: string) => void;
+    onOpenSettings?: (id: string) => void;
 }
 
 type FlowchartNode = Node<FlowchartNodeData>;
+
+// Node settings panel state
+interface NodeSettingsState {
+    isOpen: boolean;
+    nodeId: string | null;
+    label: string;
+    color: string;
+    description: string;
+    nodeType: string;
+}
 
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
@@ -46,6 +67,16 @@ export const FlowchartBuilder = () => {
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [isControlsOpen, setIsControlsOpen] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+
+    // Node settings panel state
+    const [nodeSettings, setNodeSettings] = useState<NodeSettingsState>({
+        isOpen: false,
+        nodeId: null,
+        label: '',
+        color: '',
+        description: '',
+        nodeType: '',
+    });
 
     // Undo/Redo history management
     const historyRef = useRef<{ nodes: FlowchartNode[]; edges: Edge[] }[]>([]);
@@ -255,6 +286,46 @@ export const FlowchartBuilder = () => {
         ]);
     }, [nodes, setNodes]);
 
+    // Open inspector when node is clicked
+    const handleNodeClick = useCallback((_event: React.MouseEvent, node: FlowchartNode) => {
+        if (!node) return;
+
+        setNodeSettings({
+            isOpen: true,
+            nodeId: node.id,
+            label: node.data?.label || '',
+            color: (node.data?.color as string) || DEFAULT_NODE_COLORS[node.type || 'execution'] || '#3b82f6',
+            description: (node.data?.description as string) || '',
+            nodeType: node.type || 'execution',
+        });
+    }, []);
+
+    // Save node settings
+    const handleSaveNodeSettings = useCallback(() => {
+        if (!nodeSettings.nodeId) return;
+
+        setNodes(nds => nds.map(n =>
+            n.id === nodeSettings.nodeId
+                ? {
+                    ...n,
+                    data: {
+                        ...n.data,
+                        label: nodeSettings.label,
+                        color: nodeSettings.color,
+                        description: nodeSettings.description,
+                    }
+                }
+                : n
+        ));
+
+        setNodeSettings(prev => ({ ...prev, isOpen: false, nodeId: null }));
+    }, [nodeSettings, setNodes]);
+
+    // Close node settings panel
+    const handleCloseNodeSettings = useCallback(() => {
+        setNodeSettings(prev => ({ ...prev, isOpen: false, nodeId: null }));
+    }, []);
+
     const isValidConnection = useCallback((connection: Connection) => {
         // 自己接続を防ぐ（同じノードへのループ）
         if (connection.source === connection.target) {
@@ -413,6 +484,8 @@ export const FlowchartBuilder = () => {
                 style: getInitialStyle(type),
                 data: {
                     label,
+                    color: DEFAULT_NODE_COLORS[type] || '#3b82f6',
+                    description: '',
                     onChange: (nodeId: string, newLabel: string) => {
                         setNodes((nds) =>
                             nds.map((node) =>
@@ -830,6 +903,7 @@ export const FlowchartBuilder = () => {
                     onInit={setReactFlowInstance}
                     onDrop={onDrop}
                     onDragOver={onDragOver}
+                    onNodeClick={handleNodeClick}
                     nodeTypes={nodeTypes}
                     fitView
                     id="flowchart-canvas"
@@ -936,6 +1010,95 @@ export const FlowchartBuilder = () => {
                     onChange={handleProjectFileChange}
                 />
             </div>
+
+            {/* Right Side Inspector Panel (Unity-style) */}
+            <aside className={`inspector-panel ${nodeSettings.isOpen ? 'open' : ''}`}>
+                <div className="inspector-header">
+                    <h3>🔧 Inspector</h3>
+                    <button className="inspector-close" onClick={handleCloseNodeSettings}>
+                        ✕
+                    </button>
+                </div>
+
+                {nodeSettings.isOpen && (
+                    <div className="inspector-content">
+                        <div className="inspector-section">
+                            <div className="inspector-section-title">
+                                ノード情報
+                            </div>
+                            <div className="inspector-field">
+                                <label>タイプ</label>
+                                <span className="field-value type-badge">{nodeSettings.nodeType}</span>
+                            </div>
+                        </div>
+
+                        <div className="inspector-section">
+                            <div className="inspector-section-title">
+                                プロパティ
+                            </div>
+                            <div className="inspector-field">
+                                <label>ラベル</label>
+                                <input
+                                    type="text"
+                                    value={nodeSettings.label}
+                                    onChange={(e) => setNodeSettings(prev => ({ ...prev, label: e.target.value }))}
+                                    placeholder="ノードのラベル"
+                                />
+                            </div>
+
+                            <div className="inspector-field">
+                                <label>カラー</label>
+                                <div className="color-picker-row">
+                                    <input
+                                        type="color"
+                                        value={nodeSettings.color}
+                                        onChange={(e) => setNodeSettings(prev => ({ ...prev, color: e.target.value }))}
+                                        className="color-picker"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={nodeSettings.color}
+                                        onChange={(e) => setNodeSettings(prev => ({ ...prev, color: e.target.value }))}
+                                        className="color-text"
+                                        placeholder="#000000"
+                                    />
+                                </div>
+                                <div className="color-presets">
+                                    {['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'].map(color => (
+                                        <button
+                                            key={color}
+                                            className={`color-preset ${nodeSettings.color === color ? 'active' : ''}`}
+                                            style={{ background: color }}
+                                            onClick={() => setNodeSettings(prev => ({ ...prev, color }))}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="inspector-section">
+                            <div className="inspector-section-title">
+                                説明・メモ
+                            </div>
+                            <div className="inspector-field">
+                                <textarea
+                                    value={nodeSettings.description}
+                                    onChange={(e) => setNodeSettings(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="ノードの説明やメモを入力..."
+                                    rows={4}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="inspector-actions">
+                            <button className="inspector-btn save" onClick={handleSaveNodeSettings}>
+                                💾 保存
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </aside>
+
 
             {/* Keyboard Shortcuts Help Modal */}
             {showHelp && (
