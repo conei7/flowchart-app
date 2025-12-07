@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.8';
+const APP_VERSION = 'v1.2.11';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -108,6 +108,8 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
     const historyRef = useRef<{ nodes: FlowchartNode[]; edges: Edge[] }[]>([]);
     const historyIndexRef = useRef(-1);
     const isUndoRedoActionRef = useRef(false);
+    const isDraggingRef = useRef(false);
+    const historyTimeoutRef = useRef<number | null>(null);
     const MAX_HISTORY = 50;
 
     // Load from localStorage on mount
@@ -181,47 +183,72 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [hasUnsavedChanges, nodes.length, edges.length]);
 
-    // Save to history when nodes or edges change (for undo/redo)
+    // Save to history when nodes or edges change (for undo/redo) - with debounce
     useEffect(() => {
         if (isInitialLoad || isUndoRedoActionRef.current) {
             isUndoRedoActionRef.current = false;
             return;
         }
 
-        // Create a snapshot of current state (without onChange handlers for comparison)
-        const currentState = {
-            nodes: nodes.map(n => ({
-                ...n,
-                data: { label: n.data?.label || '' }
-            })) as FlowchartNode[],
-            edges: [...edges]
-        };
+        // Skip if currently dragging - will save when drag ends
+        if (isDraggingRef.current) {
+            return;
+        }
 
-        // Don't save if nothing changed
-        if (historyRef.current.length > 0) {
-            const lastState = historyRef.current[historyIndexRef.current];
-            if (lastState &&
-                JSON.stringify(lastState.nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }))) ===
-                JSON.stringify(currentState.nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }))) &&
-                JSON.stringify(lastState.edges) === JSON.stringify(currentState.edges)) {
-                return;
+        // Clear any pending history save
+        if (historyTimeoutRef.current) {
+            clearTimeout(historyTimeoutRef.current);
+        }
+
+        // Debounce history save to avoid excessive saves during rapid changes
+        historyTimeoutRef.current = window.setTimeout(() => {
+            // Create a snapshot of current state (without onChange handlers for comparison)
+            const currentState = {
+                nodes: nodes.map(n => ({
+                    ...n,
+                    data: { label: n.data?.label || '', color: n.data?.color, description: n.data?.description }
+                })) as FlowchartNode[],
+                edges: [...edges]
+            };
+
+            // Don't save if nothing changed (including position, size, and data)
+            if (historyRef.current.length > 0) {
+                const lastState = historyRef.current[historyIndexRef.current];
+                if (lastState &&
+                    JSON.stringify(lastState.nodes.map(n => ({
+                        id: n.id, type: n.type, position: n.position, data: n.data,
+                        width: n.width, height: n.height, style: n.style
+                    }))) ===
+                    JSON.stringify(currentState.nodes.map(n => ({
+                        id: n.id, type: n.type, position: n.position, data: n.data,
+                        width: n.width, height: n.height, style: n.style
+                    }))) &&
+                    JSON.stringify(lastState.edges) === JSON.stringify(currentState.edges)) {
+                    return;
+                }
             }
-        }
 
-        // Remove any future states if we're not at the end
-        if (historyIndexRef.current < historyRef.current.length - 1) {
-            historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
-        }
+            // Remove any future states if we're not at the end
+            if (historyIndexRef.current < historyRef.current.length - 1) {
+                historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+            }
 
-        // Add new state
-        historyRef.current.push(currentState);
-        historyIndexRef.current = historyRef.current.length - 1;
+            // Add new state
+            historyRef.current.push(currentState);
+            historyIndexRef.current = historyRef.current.length - 1;
 
-        // Limit history size
-        if (historyRef.current.length > MAX_HISTORY) {
-            historyRef.current.shift();
-            historyIndexRef.current--;
-        }
+            // Limit history size
+            if (historyRef.current.length > MAX_HISTORY) {
+                historyRef.current.shift();
+                historyIndexRef.current--;
+            }
+        }, 300); // 300ms debounce
+
+        return () => {
+            if (historyTimeoutRef.current) {
+                clearTimeout(historyTimeoutRef.current);
+            }
+        };
     }, [nodes, edges, isInitialLoad]);
 
     // Undo handler
@@ -565,6 +592,57 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
             setTimeout(() => setCopySuccess(false), 2000);
         }
     }, [nodes, edges]);
+
+    // Delete selected nodes and edges
+    const handleDeleteSelected = useCallback(() => {
+        const selectedNodeIds = nodes.filter(n => n.selected).map(n => n.id);
+        const selectedEdgeIds = edges.filter(e => e.selected).map(e => e.id);
+
+        if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0) return;
+
+        // Remove selected nodes
+        setNodes(nds => nds.filter(n => !selectedNodeIds.includes(n.id)));
+        // Remove selected edges and edges connected to deleted nodes
+        setEdges(eds => eds.filter(e =>
+            !selectedEdgeIds.includes(e.id) &&
+            !selectedNodeIds.includes(e.source) &&
+            !selectedNodeIds.includes(e.target)
+        ));
+
+        // Close inspector if the deleted node/edge was being inspected
+        if (nodeSettings.id && (selectedNodeIds.includes(nodeSettings.id) || selectedEdgeIds.includes(nodeSettings.id))) {
+            setNodeSettings({
+                isOpen: false,
+                type: null,
+                id: null,
+                label: '',
+                color: '',
+                description: '',
+                nodeType: '',
+                sourceNode: '',
+                targetNode: '',
+            });
+        }
+    }, [nodes, edges, setNodes, setEdges, nodeSettings.id]);
+
+    // Delete a specific node by ID
+    const handleDeleteNode = useCallback((nodeIdToDelete: string) => {
+        setNodes(nds => nds.filter(n => n.id !== nodeIdToDelete));
+        setEdges(eds => eds.filter(e => e.source !== nodeIdToDelete && e.target !== nodeIdToDelete));
+
+        // Close inspector
+        setNodeSettings({
+            isOpen: false,
+            type: null,
+            id: null,
+            label: '',
+            color: '',
+            description: '',
+            nodeType: '',
+            sourceNode: '',
+            targetNode: '',
+        });
+    }, [setNodes, setEdges]);
 
     // Project save handler
     const handleSaveProject = useCallback(() => {
@@ -914,11 +992,17 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                 setEdges(eds => eds.map(edge => ({ ...edge, selected: false })));
                 setShowHelp(false);
             }
+
+            // Backspace: Delete selected nodes/edges
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                handleDeleteSelected();
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleSaveProject, handleExportImage, handleUndo, handleRedo, handleDuplicateNodes, setNodes, setEdges]);
+    }, [handleSaveProject, handleExportImage, handleUndo, handleRedo, handleDuplicateNodes, handleDeleteSelected, setNodes, setEdges]);
 
 
     return (
@@ -935,6 +1019,12 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                     onDrop={onDrop}
                     onDragOver={onDragOver}
                     onNodeClick={handleNodeClick}
+                    onNodeDragStart={() => { isDraggingRef.current = true; }}
+                    onNodeDragStop={() => {
+                        isDraggingRef.current = false;
+                        // Force a history save after drag ends
+                        setNodes(n => [...n]);
+                    }}
                     nodeTypes={nodeTypes}
                     fitView
                     id="flowchart-canvas"
@@ -1120,7 +1210,7 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                             </div>
                         </div>
 
-                        <div className="inspector-section">
+                        <div className="inspector-section description-section">
                             <div className="inspector-section-title">
                                 Description / Notes
                             </div>
@@ -1133,6 +1223,18 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                                 />
                             </div>
                         </div>
+
+                        {/* Delete Node Section */}
+                        {nodeSettings.type === 'node' && nodeSettings.id && (
+                            <div className="inspector-section inspector-danger-section">
+                                <button
+                                    className="inspector-delete-btn"
+                                    onClick={() => handleDeleteNode(nodeSettings.id!)}
+                                >
+                                    Delete Node
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </aside>
@@ -1184,7 +1286,7 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                             </div>
                             <div className="shortcut-item">
                                 <div className="shortcut-keys">
-                                    <kbd>Delete</kbd>
+                                    <kbd>Delete</kbd><span className="key-separator">/</span><kbd>Backspace</kbd>
                                 </div>
                                 <span className="shortcut-label">Delete Selection</span>
                             </div>

@@ -13,6 +13,10 @@ A modern, visual flowchart creation application built with React and ReactFlow.
 - **Editable Labels**: Double-click nodes to edit text
 - **Resizable Nodes**: All node types can be resized
 - **Auto Layout**: Automatic vertical arrangement of nodes
+- **Undo/Redo**: Full undo/redo support (Ctrl+Z/Ctrl+Y)
+- **Node Duplication**: Duplicate selected nodes (Ctrl+D)
+- **Node Deletion**: Delete nodes with Backspace/Delete key or inspector button
+- **Keyboard Shortcuts**: Press ? to view all shortcuts
 
 ### File Operations
 - **Save Project** (.fchart format): Save your flowchart for later editing
@@ -26,7 +30,8 @@ A modern, visual flowchart creation application built with React and ReactFlow.
 - **Restore on Reload**: Your work is preserved when you refresh the page
 - **Unsaved Changes Warning**: Warns before closing if you have unsaved work
 - **Collapsible Controls**: Clean UI with dropdown controls panel
-- **Dark Theme**: Modern glassmorphism design
+- **Dark/Light Theme**: Toggle between dark and light modes
+- **Node Inspector**: Unity-style inspector panel with custom colors and descriptions
 
 ## 🚀 Getting Started
 
@@ -91,7 +96,26 @@ src/
 
 ## 📝 Version History
 
-- **v1.1.5** - Start/End nodes text editing and resizing, Auto Layout moved to sidebar, handle size/color unified
+- **v1.2.11** - Node deletion feature (Backspace key, inspector delete button)
+- **v1.2.10** - Node resize undo/redo support
+- **v1.2.9** - History management performance improvements (debounce, drag skip)
+- **v1.2.8** - Unified selection styles with drop-shadow, edge selection color preservation
+- **v1.2.7** - Condition node selection style fix, Fit View considers inspector
+- **v1.2.6** - Condition node selection style, light mode Controls button fix
+- **v1.2.5** - Help button in header, sidebar scroll fix, toggle button fix
+- **v1.2.4** - Light mode color improvements, sidebar title resize, help display
+- **v1.2.3** - Dark/Light mode toggle button (top-right)
+- **v1.2.2** - Header size reduction, inspector header consideration, Controls panel responsive
+- **v1.2.1** - UI language unified to English, keyboard shortcuts help improvement
+- **v1.2.0** - Node inspector panel (Unity-style, custom colors, descriptions)
+- **v1.1.12** - Keyboard shortcuts help modal (? key)
+- **v1.1.11** - Node duplication feature (Ctrl+D)
+- **v1.1.10** - Undo/Redo feature (Ctrl+Z/Ctrl+Y)
+- **v1.1.9** - Keyboard shortcuts (Ctrl+S/E/A, Escape)
+- **v1.1.8** - Node/edge selection pulse animation and glow effects
+- **v1.1.7** - Viewport position restore after PNG export
+- **v1.1.6** - TypeScript type error fixes
+- **v1.1.5** - Start/End nodes text editing and resizing, Auto Layout moved to sidebar
 - **v1.1.4** - Collapsible Controls panel with dropdown animation
 - **v1.1.3** - Auto-save to localStorage, unsaved changes warning
 - **v1.1.2** - UI reorganization, Auto Layout moved to bottom-left
