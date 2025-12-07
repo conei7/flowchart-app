@@ -1,6 +1,15 @@
 import { toPng } from 'html-to-image';
 import { Node, Edge } from '@xyflow/react';
 
+// Custom node data interface for type safety
+interface FlowchartNodeData extends Record<string, unknown> {
+    label: string;
+    onChange?: (id: string, newLabel: string) => void;
+}
+
+// Type alias for nodes with our custom data
+type FlowchartNode = Node<FlowchartNodeData>;
+
 /**
  * Export flowchart as PNG image
  */
@@ -29,7 +38,7 @@ export const exportAsImage = async (elementId: string, fileName: string = 'flowc
 /**
  * Export flowchart as JSON
  */
-export const exportAsJSON = (nodes: Node[], edges: Edge[], fileName: string = 'flowchart.json') => {
+export const exportAsJSON = (nodes: FlowchartNode[], edges: Edge[], fileName: string = 'flowchart.json') => {
     const flowchartData = {
         nodes: nodes.map(node => ({
             id: node.id,
@@ -89,7 +98,7 @@ export interface FlowchartProject {
 /**
  * Save flowchart project to .fchart file (complete save with all positions and sizes)
  */
-export const saveProject = (nodes: Node[], edges: Edge[], fileName: string = 'flowchart.fchart') => {
+export const saveProject = (nodes: FlowchartNode[], edges: Edge[], fileName: string = 'flowchart.fchart') => {
     const project: FlowchartProject = {
         version: PROJECT_VERSION,
         createdAt: new Date().toISOString(),
@@ -99,11 +108,11 @@ export const saveProject = (nodes: Node[], edges: Edge[], fileName: string = 'fl
             type: node.type || 'execution',
             position: node.position,
             size: {
-                width: (node as any).width || (node as any).measured?.width || (node.style as any)?.width || getDefaultSize(node.type).width,
-                height: (node as any).height || (node as any).measured?.height || (node.style as any)?.height || getDefaultSize(node.type).height,
+                width: (node.measured?.width as number) || ((node.style as Record<string, number>)?.width) || getDefaultSize(node.type).width,
+                height: (node.measured?.height as number) || ((node.style as Record<string, number>)?.height) || getDefaultSize(node.type).height,
             },
-            style: node.style as Record<string, any>,
-            data: { label: (node.data as any)?.label || '' },
+            style: node.style as Record<string, unknown>,
+            data: { label: node.data?.label || '' },
         })),
         edges: edges.map(edge => ({
             id: edge.id,
@@ -166,12 +175,12 @@ export const loadProject = (fileContent: string): FlowchartProject | null => {
 /**
  * Export flowchart as Mermaid-like string representation
  */
-export const exportAsMermaid = (nodes: Node[], edges: Edge[]): string => {
+export const exportAsMermaid = (nodes: FlowchartNode[], edges: Edge[]): string => {
     let mermaidString = 'flowchart TD\n';
 
     // Add nodes
     nodes.forEach(node => {
-        const label = node.data.label || node.type || 'Node';
+        const label = node.data?.label || node.type || 'Node';
         const cleanLabel = label.replace(/"/g, '\\"');
 
         switch (node.type) {
@@ -203,12 +212,12 @@ export const exportAsMermaid = (nodes: Node[], edges: Edge[]): string => {
 /**
  * Export flowchart as descriptive text
  */
-export const exportAsText = (nodes: Node[], edges: Edge[], fileName: string = 'flowchart.txt'): void => {
+export const exportAsText = (nodes: FlowchartNode[], edges: Edge[], fileName: string = 'flowchart.txt'): void => {
     let textContent = '=== FLOWCHART DESCRIPTION ===\n\n';
 
     textContent += 'NODES:\n';
     nodes.forEach((node, index) => {
-        const label = node.data.label || node.type || 'Node';
+        const label = node.data?.label || node.type || 'Node';
         textContent += `${index + 1}. [${node.type?.toUpperCase()}] ${node.id}: "${label}"\n`;
         textContent += `   Position: (${Math.round(node.position.x)}, ${Math.round(node.position.y)})\n\n`;
     });
@@ -217,8 +226,8 @@ export const exportAsText = (nodes: Node[], edges: Edge[], fileName: string = 'f
     edges.forEach((edge, index) => {
         const sourceNode = nodes.find(n => n.id === edge.source);
         const targetNode = nodes.find(n => n.id === edge.target);
-        const sourceLabel = sourceNode?.data.label || edge.source;
-        const targetLabel = targetNode?.data.label || edge.target;
+        const sourceLabel = sourceNode?.data?.label || edge.source;
+        const targetLabel = targetNode?.data?.label || edge.target;
 
         textContent += `${index + 1}. "${sourceLabel}" → "${targetLabel}"\n`;
     });
@@ -240,7 +249,7 @@ export const exportAsText = (nodes: Node[], edges: Edge[], fileName: string = 'f
 /**
  * Copy Mermaid diagram to clipboard
  */
-export const copyMermaidToClipboard = async (nodes: Node[], edges: Edge[]): Promise<boolean> => {
+export const copyMermaidToClipboard = async (nodes: FlowchartNode[], edges: Edge[]): Promise<boolean> => {
     const mermaidString = exportAsMermaid(nodes, edges);
 
     try {

@@ -1,8 +1,17 @@
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position, NodeProps, NodeResizer, useEdges } from '@xyflow/react';
+import { Handle, Position, NodeProps, NodeResizer, useEdges, Node } from '@xyflow/react';
+
+// Custom node data interface
+interface CustomNodeData extends Record<string, unknown> {
+    label: string;
+    onChange?: (id: string, newLabel: string) => void;
+}
+
+// Custom node type with our data
+type CustomNode = Node<CustomNodeData>;
 
 // Start Node - Oval shape, editable, resizable
-export const StartNode = memo(({ data, selected, id }: NodeProps) => {
+export const StartNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'Start');
     const [isEditing, setIsEditing] = useState(false);
 
@@ -85,7 +94,7 @@ export const StartNode = memo(({ data, selected, id }: NodeProps) => {
 StartNode.displayName = 'StartNode';
 
 // End Node - Oval shape, editable, resizable
-export const EndNode = memo(({ data, selected, id }: NodeProps) => {
+export const EndNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'End');
     const [isEditing, setIsEditing] = useState(false);
 
@@ -168,7 +177,7 @@ export const EndNode = memo(({ data, selected, id }: NodeProps) => {
 EndNode.displayName = 'EndNode';
 
 // Execution Node - Rectangle, resizable, editable
-export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
+export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'Process');
     const [isEditing, setIsEditing] = useState(false);
 
@@ -287,7 +296,7 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps) => {
 ExecutionNode.displayName = 'ExecutionNode';
 
 // Condition Node - Diamond shape, resizable, editable
-export const ConditionNode = memo(({ data, selected, id }: NodeProps) => {
+export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [text, setText] = useState(data.label || 'Condition?');
     const [isEditing, setIsEditing] = useState(false);
     const edges = useEdges();

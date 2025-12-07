@@ -10,6 +10,8 @@ import {
     Connection,
     Panel,
     BackgroundVariant,
+    Node,
+    Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Download, Save, FolderOpen, FileText, Copy, CheckCircle, ChevronDown } from 'lucide-react';
@@ -22,14 +24,22 @@ import './FlowchartBuilder.css';
 const APP_VERSION = 'v1.1.5';
 const STORAGE_KEY = 'flowchart-autosave';
 
+// Custom node data interface
+interface FlowchartNodeData extends Record<string, unknown> {
+    label: string;
+    onChange?: (id: string, newLabel: string) => void;
+}
+
+type FlowchartNode = Node<FlowchartNodeData>;
+
 let nodeId = 0;
 const getNodeId = () => `node_${nodeId++}`;
 
 export const FlowchartBuilder = () => {
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const projectFileInputRef = useRef<HTMLInputElement>(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const [nodes, setNodes, onNodesChange] = useNodesState<FlowchartNode>([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
     const [copySuccess, setCopySuccess] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -206,8 +216,6 @@ export const FlowchartBuilder = () => {
             const label = event.dataTransfer.getData('label');
 
             if (!type) return;
-
-            const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
 
             // Get the position in flow coordinates
             const dropPosition = reactFlowInstance.screenToFlowPosition({
