@@ -38,6 +38,28 @@
     --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Light Theme */
+[data-theme="light"] {
+    --bg-primary: hsl(220, 20%, 97%);
+    --bg-secondary: hsl(220, 15%, 92%);
+    --bg-tertiary: hsl(220, 12%, 88%);
+    --bg-hover: hsl(220, 10%, 85%);
+
+    --text-primary: hsl(220, 20%, 15%);
+    --text-secondary: hsl(220, 10%, 40%);
+    --text-tertiary: hsl(220, 8%, 55%);
+
+    --border-color: hsl(220, 15%, 82%);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+    /* Glassmorphism for light mode */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.08);
+}
+
 * {
     margin: 0;
     padding: 0;
