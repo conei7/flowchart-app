@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.1.10';
+const APP_VERSION = 'v1.1.11';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Custom node data interface
@@ -221,6 +221,38 @@ export const FlowchartBuilder = () => {
             setEdges(nextState.edges);
         }
     }, [setNodes, setEdges]);
+
+    // Duplicate selected nodes handler
+    const handleDuplicateNodes = useCallback(() => {
+        const selectedNodes = nodes.filter(n => n.selected);
+        if (selectedNodes.length === 0) return;
+
+        const newNodes = selectedNodes.map(node => ({
+            ...node,
+            id: getNodeId(),
+            position: {
+                x: node.position.x + 30,
+                y: node.position.y + 30,
+            },
+            selected: true,
+            data: {
+                ...node.data,
+                onChange: (nodeId: string, newLabel: string) => {
+                    setNodes(nds => nds.map(n =>
+                        n.id === nodeId
+                            ? { ...n, data: { ...n.data, label: newLabel } }
+                            : n
+                    ));
+                },
+            },
+        }));
+
+        // Deselect original nodes and add new ones
+        setNodes(nds => [
+            ...nds.map(n => ({ ...n, selected: false })),
+            ...newNodes
+        ]);
+    }, [nodes, setNodes]);
 
     const isValidConnection = useCallback((connection: Connection) => {
         // 自己接続を防ぐ（同じノードへのループ）
@@ -752,6 +784,12 @@ export const FlowchartBuilder = () => {
                 handleRedo();
             }
 
+            // Ctrl/Cmd + D: Duplicate selected nodes
+            if (modKey && e.key === 'd') {
+                e.preventDefault();
+                handleDuplicateNodes();
+            }
+
             // Ctrl/Cmd + A: Select all nodes
             if (modKey && e.key === 'a') {
                 e.preventDefault();
@@ -768,7 +806,7 @@ export const FlowchartBuilder = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleSaveProject, handleExportImage, handleUndo, handleRedo, setNodes, setEdges]);
+    }, [handleSaveProject, handleExportImage, handleUndo, handleRedo, handleDuplicateNodes, setNodes, setEdges]);
 
 
     return (
