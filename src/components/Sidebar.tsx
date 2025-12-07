@@ -1,4 +1,5 @@
-import { Circle, Square, Diamond, StopCircle, Layers } from 'lucide-react';
+import { useState } from 'react';
+import { Circle, Square, Diamond, StopCircle, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import './Sidebar.css';
 
 interface NodeTypeConfig {
@@ -40,6 +41,8 @@ const nodeTypes: NodeTypeConfig[] = [
 ];
 
 export const Sidebar = ({ onAutoLayout }: SidebarProps) => {
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
     const onDragStart = (event: React.DragEvent, nodeType: string, label: string) => {
         event.dataTransfer.setData('application/reactflow', nodeType);
         event.dataTransfer.setData('label', label);
@@ -47,47 +50,76 @@ export const Sidebar = ({ onAutoLayout }: SidebarProps) => {
     };
 
     return (
-        <aside className="sidebar">
-            <div className="sidebar-header">
-                <h2 className="sidebar-title gradient-text">Nodes</h2>
-                <p className="sidebar-subtitle">Drag to canvas</p>
-            </div>
+        <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+            <button
+                className="sidebar-toggle"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                title={isCollapsed ? '展開' : '折りたたみ'}
+            >
+                {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
 
-            <div className="node-list">
-                {nodeTypes.map((node) => (
-                    <div
-                        key={node.type}
-                        className="node-item"
-                        draggable
-                        onDragStart={(e) => onDragStart(e, node.type, node.label)}
-                        style={{
-                            '--node-color': node.color,
-                        } as React.CSSProperties}
-                    >
-                        <div className="node-item-icon" style={{ color: node.color }}>
+            {!isCollapsed && (
+                <>
+                    <div className="sidebar-header">
+                        <h2 className="sidebar-title gradient-text">Nodes</h2>
+                        <p className="sidebar-subtitle">Drag to canvas</p>
+                    </div>
+
+                    <div className="node-list">
+                        {nodeTypes.map((node) => (
+                            <div
+                                key={node.type}
+                                className="node-item"
+                                draggable
+                                onDragStart={(e) => onDragStart(e, node.type, node.label)}
+                                style={{
+                                    '--node-color': node.color,
+                                } as React.CSSProperties}
+                            >
+                                <div className="node-item-icon" style={{ color: node.color }}>
+                                    {node.icon}
+                                </div>
+                                <span className="node-item-label">{node.label}</span>
+                                <div className="node-item-drag-hint">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <circle cx="4" cy="4" r="1.5" fill="currentColor" opacity="0.5" />
+                                        <circle cx="12" cy="4" r="1.5" fill="currentColor" opacity="0.5" />
+                                        <circle cx="4" cy="8" r="1.5" fill="currentColor" opacity="0.5" />
+                                        <circle cx="12" cy="8" r="1.5" fill="currentColor" opacity="0.5" />
+                                        <circle cx="4" cy="12" r="1.5" fill="currentColor" opacity="0.5" />
+                                        <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="sidebar-footer">
+                        <button className="auto-layout-button" onClick={onAutoLayout}>
+                            <Layers size={18} />
+                            <span>Auto Layout</span>
+                        </button>
+                    </div>
+                </>
+            )}
+
+            {isCollapsed && (
+                <div className="collapsed-icons">
+                    {nodeTypes.map((node) => (
+                        <div
+                            key={node.type}
+                            className="collapsed-node-item"
+                            draggable
+                            onDragStart={(e) => onDragStart(e, node.type, node.label)}
+                            title={node.label}
+                            style={{ color: node.color }}
+                        >
                             {node.icon}
                         </div>
-                        <span className="node-item-label">{node.label}</span>
-                        <div className="node-item-drag-hint">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <circle cx="4" cy="4" r="1.5" fill="currentColor" opacity="0.5" />
-                                <circle cx="12" cy="4" r="1.5" fill="currentColor" opacity="0.5" />
-                                <circle cx="4" cy="8" r="1.5" fill="currentColor" opacity="0.5" />
-                                <circle cx="12" cy="8" r="1.5" fill="currentColor" opacity="0.5" />
-                                <circle cx="4" cy="12" r="1.5" fill="currentColor" opacity="0.5" />
-                                <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.5" />
-                            </svg>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="sidebar-footer">
-                <button className="auto-layout-button" onClick={onAutoLayout}>
-                    <Layers size={18} />
-                    <span>Auto Layout</span>
-                </button>
-            </div>
+                    ))}
+                </div>
+            )}
         </aside>
     );
 };

@@ -1013,7 +1013,15 @@ export const FlowchartBuilder = () => {
             {/* Right Side Inspector Panel (Unity-style) */}
             <aside className={`inspector-panel ${nodeSettings.isOpen ? 'open' : ''}`}>
                 <div className="inspector-header">
-                    <h3>🔧 Inspector</h3>
+                    <div className="inspector-title">
+                        <span className={`node-type-icon ${nodeSettings.nodeType}`}>
+                            {nodeSettings.nodeType === 'start' && '▶'}
+                            {nodeSettings.nodeType === 'end' && '⬛'}
+                            {nodeSettings.nodeType === 'execution' && '▭'}
+                            {nodeSettings.nodeType === 'condition' && '◇'}
+                        </span>
+                        <h3>{nodeSettings.label || 'Node'}</h3>
+                    </div>
                     <button className="inspector-close" onClick={handleCloseNodeSettings}>
                         ✕
                     </button>
@@ -1021,16 +1029,6 @@ export const FlowchartBuilder = () => {
 
                 {nodeSettings.isOpen && (
                     <div className="inspector-content">
-                        <div className="inspector-section">
-                            <div className="inspector-section-title">
-                                ノード情報
-                            </div>
-                            <div className="inspector-field">
-                                <label>タイプ</label>
-                                <span className="field-value type-badge">{nodeSettings.nodeType}</span>
-                            </div>
-                        </div>
-
                         <div className="inspector-section">
                             <div className="inspector-section-title">
                                 プロパティ

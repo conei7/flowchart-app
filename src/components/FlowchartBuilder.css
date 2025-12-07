@@ -819,3 +819,58 @@
 .inspector-section:last-child textarea {
     flex: 1;
 }
+
+/* Inspector Panel - Darker background (same as sidebar) */
+.inspector-panel {
+    background: var(--panel-bg);
+}
+
+/* Inspector Title with node type icon */
+.inspector-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.inspector-title h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.node-type-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.node-type-icon.start {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.node-type-icon.end {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.node-type-icon.execution {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.node-type-icon.condition {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
