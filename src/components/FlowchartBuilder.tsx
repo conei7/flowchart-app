@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.14';
+const APP_VERSION = 'v1.2.15';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -575,6 +575,94 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
         [reactFlowInstance, setNodes, nodes]
     );
 
+    // Add node via tap (for mobile)
+    const handleAddNode = useCallback(
+        (type: string, label: string) => {
+            if (!reactFlowInstance || !reactFlowWrapper.current) return;
+
+            // Get viewport center
+            const { x, y, zoom } = reactFlowInstance.getViewport();
+            const bounds = reactFlowWrapper.current.getBoundingClientRect();
+            const centerX = (bounds.width / 2 - x) / zoom;
+            const centerY = (bounds.height / 2 - y) / zoom;
+
+            const getNodeSize = (nodeType: string) => {
+                switch (nodeType) {
+                    case 'condition':
+                        return { width: 150, height: 150 };
+                    case 'execution':
+                        return { width: 150, height: 80 };
+                    case 'start':
+                    case 'end':
+                        return { width: 120, height: 120 };
+                    default:
+                        return { width: 100, height: 100 };
+                }
+            };
+
+            const nodeSize = getNodeSize(type);
+
+            // Add some randomness to avoid stacking
+            const offsetX = (Math.random() - 0.5) * 100;
+            const offsetY = (Math.random() - 0.5) * 100;
+
+            const position = {
+                x: centerX - nodeSize.width / 2 + offsetX,
+                y: centerY - nodeSize.height / 2 + offsetY,
+            };
+
+            const getInitialStyle = (nodeType: string) => {
+                switch (nodeType) {
+                    case 'condition':
+                        return { width: 150, height: 150 };
+                    case 'execution':
+                        return { width: 150, height: 80 };
+                    case 'start':
+                    case 'end':
+                        return { width: 120, height: 120 };
+                    default:
+                        return undefined;
+                }
+            };
+
+            // Warn if adding a second Start node
+            if (type === 'start') {
+                const existingStart = nodes.find((n: any) => n.type === 'start');
+                if (existingStart) {
+                    const confirmAdd = window.confirm('⚠️ A Start node already exists.\n\nMultiple Start nodes may cause confusion in the flowchart.\n\nDo you want to add another Start node anyway?');
+                    if (!confirmAdd) {
+                        return;
+                    }
+                }
+            }
+
+            const newNode = {
+                id: getNodeId(),
+                type,
+                position,
+                style: getInitialStyle(type),
+                selected: false,
+                data: {
+                    label,
+                    color: DEFAULT_NODE_COLORS[type] || '#3b82f6',
+                    description: '',
+                    onChange: (nodeId: string, newLabel: string) => {
+                        setNodes((nds) =>
+                            nds.map((node) =>
+                                node.id === nodeId
+                                    ? { ...node, data: { ...node.data, label: newLabel } }
+                                    : node
+                            )
+                        );
+                    },
+                },
+            };
+
+            setNodes((nds) => nds.concat(newNode));
+        },
+        [reactFlowInstance, setNodes, nodes]
+    );
+
     const handleExportImage = useCallback(async () => {
         if (!reactFlowInstance) return;
 
@@ -1021,7 +1109,7 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
 
     return (
         <div className="flowchart-builder">
-            <Sidebar onAutoLayout={handleAutoLayout} />
+            <Sidebar onAutoLayout={handleAutoLayout} onNodeAdd={handleAddNode} />
             <div className="flowchart-container" ref={reactFlowWrapper}>
                 <ReactFlow
                     nodes={nodes}

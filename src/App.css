@@ -70,23 +70,56 @@
 }
 
 @media (max-width: 768px) {
+    .app-header {
+        padding: 0 12px;
+    }
+
     .header-content {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-        padding: 8px 16px;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0;
     }
 
     .app-subtitle {
-        padding-left: 0;
-        border-left: none;
+        display: none;
     }
 
     .app-title {
-        font-size: 18px;
+        font-size: 16px;
+    }
+
+    .header-actions {
+        gap: 6px;
+    }
+
+    .header-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
     }
 
     .app-main {
-        padding-top: 60px;
+        padding-top: 52px;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 0 10px;
+    }
+
+    .app-title {
+        font-size: 14px;
+    }
+
+    .header-action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        gap: 4px;
     }
 }
