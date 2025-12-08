@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from 'react';
+import { memo, useState, useCallback, useEffect } from 'react';
 import { Handle, Position, NodeProps, NodeResizer, useEdges, Node } from '@xyflow/react';
 
 // Custom node data interface
@@ -32,6 +32,11 @@ export const StartNode = memo(({ data, selected, id }: NodeProps<CustomNode>) =>
     const [text, setText] = useState(data.label || 'Start');
     const [isEditing, setIsEditing] = useState(false);
     const nodeColor = (data.color as string) || '#10b981';
+
+    // Sync with external data.label changes (from inspector)
+    useEffect(() => {
+        setText(data.label || 'Start');
+    }, [data.label]);
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value);
@@ -126,6 +131,11 @@ export const EndNode = memo(({ data, selected, id }: NodeProps<CustomNode>) => {
     const [isEditing, setIsEditing] = useState(false);
     const nodeColor = (data.color as string) || '#ef4444';
 
+    // Sync with external data.label changes (from inspector)
+    useEffect(() => {
+        setText(data.label || 'End');
+    }, [data.label]);
+
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value);
         if (data.onChange) {
@@ -218,6 +228,11 @@ export const ExecutionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
     const [text, setText] = useState(data.label || 'Process');
     const [isEditing, setIsEditing] = useState(false);
     const nodeColor = (data.color as string) || '#3b82f6';
+
+    // Sync with external data.label changes (from inspector)
+    useEffect(() => {
+        setText(data.label || 'Process');
+    }, [data.label]);
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);
@@ -348,6 +363,11 @@ export const ConditionNode = memo(({ data, selected, id }: NodeProps<CustomNode>
     const [isEditing, setIsEditing] = useState(false);
     const edges = useEdges();
     const nodeColor = (data.color as string) || '#f59e0b';
+
+    // Sync with external data.label changes (from inspector)
+    useEffect(() => {
+        setText(data.label || 'Condition?');
+    }, [data.label]);
 
     const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setText(e.target.value);

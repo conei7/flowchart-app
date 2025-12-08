@@ -96,6 +96,7 @@ src/
 
 ## 📝 Version History
 
+- **v1.2.14** - Inspector label editing now reflects on nodes instantly, renamed Notes to Description
 - **v1.2.13** - Inspector collapsible sections (Label/Color/Notes), improved selection highlight persistence
 - **v1.2.12** - Bug fixes: Improved node drag performance, fixed condition node border visibility
 - **v1.2.11** - Node deletion feature (Backspace key, inspector delete button)

@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.13';
+const APP_VERSION = 'v1.2.14';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -108,7 +108,7 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
     const [inspectorCollapsed, setInspectorCollapsed] = useState({
         label: false,
         color: false,
-        notes: false,
+        description: false,
     });
 
     // Undo/Redo history management
@@ -1250,16 +1250,16 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                             )}
                         </div>
 
-                        {/* Notes Section */}
-                        <div className={`inspector-section description-section ${inspectorCollapsed.notes ? 'collapsed' : ''}`}>
+                        {/* Description Section */}
+                        <div className={`inspector-section description-section ${inspectorCollapsed.description ? 'collapsed' : ''}`}>
                             <div
                                 className="inspector-section-title collapsible"
-                                onClick={() => setInspectorCollapsed(prev => ({ ...prev, notes: !prev.notes }))}
+                                onClick={() => setInspectorCollapsed(prev => ({ ...prev, description: !prev.description }))}
                             >
-                                <span className="collapse-arrow">{inspectorCollapsed.notes ? '▶' : '▼'}</span>
-                                Notes
+                                <span className="collapse-arrow">{inspectorCollapsed.description ? '▶' : '▼'}</span>
+                                Description
                             </div>
-                            {!inspectorCollapsed.notes && (
+                            {!inspectorCollapsed.description && (
                                 <div className="inspector-field description-field">
                                     <textarea
                                         value={nodeSettings.description}
