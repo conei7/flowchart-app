@@ -281,15 +281,16 @@
         right: 0;
         width: 100%;
         height: auto;
-        max-height: 80px;
+        max-height: 120px;
         flex-direction: row;
-        padding: 12px 16px;
+        padding: 16px 16px 20px 16px;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
         gap: 12px;
         border-right: none;
         border-top: 1px solid var(--border-color);
         z-index: 998;
         overflow-x: auto;
-        overflow-y: hidden;
+        overflow-y: visible;
         animation: slideUp 350ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -326,9 +327,11 @@
     .node-item {
         flex-direction: column;
         min-width: 70px;
+        flex-shrink: 0;
         padding: 10px 12px;
         gap: 6px;
         text-align: center;
+        box-sizing: border-box;
     }
 
     .node-item-icon {
@@ -355,7 +358,8 @@
     /* Collapsed state not needed on mobile */
     .sidebar.collapsed {
         width: 100%;
-        padding: 12px 16px;
+        padding: 16px 16px 20px 16px;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     }
 
     .sidebar.collapsed .collapsed-icons {
@@ -377,7 +381,7 @@
     /* Auto Layout as floating button on mobile */
     .mobile-auto-layout {
         position: fixed;
-        bottom: 100px;
+        bottom: 122px;
         right: 16px;
         width: 56px;
         height: 56px;
