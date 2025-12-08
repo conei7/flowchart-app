@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.12';
+const APP_VERSION = 'v1.2.13';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -102,6 +102,13 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
         nodeType: '',
         sourceNode: '',
         targetNode: '',
+    });
+
+    // Inspector section collapse states (Unity-style)
+    const [inspectorCollapsed, setInspectorCollapsed] = useState({
+        label: false,
+        color: false,
+        notes: false,
     });
 
     // Undo/Redo history management
@@ -343,6 +350,12 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
     const handleNodeClick = useCallback((_event: React.MouseEvent, node: FlowchartNode) => {
         if (!node) return;
 
+        // Select only this node (deselect others)
+        setNodes(nds => nds.map(n => ({
+            ...n,
+            selected: n.id === node.id
+        })));
+
         setNodeSettings({
             isOpen: true,
             type: 'node',
@@ -354,7 +367,7 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
             sourceNode: '',
             targetNode: '',
         });
-    }, []);
+    }, [setNodes]);
 
     // Update node settings in real-time (auto-save)
     const updateNodeProperty = useCallback((property: 'label' | 'color' | 'description', value: string) => {
@@ -540,6 +553,7 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                 type,
                 position,
                 style: getInitialStyle(type),
+                selected: false, // Don't select new node, maintain previous selection
                 data: {
                     label,
                     color: DEFAULT_NODE_COLORS[type] || '#3b82f6',
@@ -1019,7 +1033,16 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
                     onDrop={onDrop}
                     onDragOver={onDragOver}
                     onNodeClick={handleNodeClick}
-                    onNodeDragStart={() => { isDraggingRef.current = true; }}
+                    onNodeDragStart={(_event, _node) => {
+                        isDraggingRef.current = true;
+                        // Maintain selection of the node shown in inspector
+                        if (nodeSettings.isOpen && nodeSettings.id) {
+                            setNodes(nds => nds.map(n => ({
+                                ...n,
+                                selected: n.id === nodeSettings.id
+                            })));
+                        }
+                    }}
                     onNodeDragStop={() => {
                         isDraggingRef.current = false;
                         // Force a history save after drag ends
@@ -1166,62 +1189,86 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
 
                 {nodeSettings.isOpen && (
                     <div className="inspector-content">
-                        <div className="inspector-section">
-                            <div className="inspector-section-title">
-                                Properties
+                        {/* Label Section */}
+                        <div className={`inspector-section ${inspectorCollapsed.label ? 'collapsed' : ''}`}>
+                            <div
+                                className="inspector-section-title collapsible"
+                                onClick={() => setInspectorCollapsed(prev => ({ ...prev, label: !prev.label }))}
+                            >
+                                <span className="collapse-arrow">{inspectorCollapsed.label ? '▶' : '▼'}</span>
+                                Label
                             </div>
-                            <div className="inspector-field">
-                                <label>Label</label>
-                                <input
-                                    type="text"
-                                    value={nodeSettings.label}
-                                    onChange={(e) => updateNodeProperty('label', e.target.value)}
-                                    placeholder="Node label"
-                                />
-                            </div>
-
-                            <div className="inspector-field">
-                                <label>Color</label>
-                                <div className="color-picker-row">
-                                    <input
-                                        type="color"
-                                        value={nodeSettings.color}
-                                        onChange={(e) => updateNodeProperty('color', e.target.value)}
-                                        className="color-picker"
-                                    />
+                            {!inspectorCollapsed.label && (
+                                <div className="inspector-field">
                                     <input
                                         type="text"
-                                        value={nodeSettings.color}
-                                        onChange={(e) => updateNodeProperty('color', e.target.value)}
-                                        className="color-text"
-                                        placeholder="#000000"
+                                        value={nodeSettings.label}
+                                        onChange={(e) => updateNodeProperty('label', e.target.value)}
+                                        placeholder="Node label"
                                     />
                                 </div>
-                                <div className="color-presets">
-                                    {['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'].map(color => (
-                                        <button
-                                            key={color}
-                                            className={`color-preset ${nodeSettings.color === color ? 'active' : ''}`}
-                                            style={{ background: color }}
-                                            onClick={() => updateNodeProperty('color', color)}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
+                            )}
                         </div>
 
-                        <div className="inspector-section description-section">
-                            <div className="inspector-section-title">
-                                Description / Notes
+                        {/* Color Section */}
+                        <div className={`inspector-section ${inspectorCollapsed.color ? 'collapsed' : ''}`}>
+                            <div
+                                className="inspector-section-title collapsible"
+                                onClick={() => setInspectorCollapsed(prev => ({ ...prev, color: !prev.color }))}
+                            >
+                                <span className="collapse-arrow">{inspectorCollapsed.color ? '▶' : '▼'}</span>
+                                Color
                             </div>
-                            <div className="inspector-field description-field">
-                                <textarea
-                                    value={nodeSettings.description}
-                                    onChange={(e) => updateNodeProperty('description', e.target.value)}
-                                    placeholder="Enter node description or notes..."
-                                    rows={8}
-                                />
+                            {!inspectorCollapsed.color && (
+                                <div className="inspector-field">
+                                    <div className="color-picker-row">
+                                        <input
+                                            type="color"
+                                            value={nodeSettings.color}
+                                            onChange={(e) => updateNodeProperty('color', e.target.value)}
+                                            className="color-picker"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={nodeSettings.color}
+                                            onChange={(e) => updateNodeProperty('color', e.target.value)}
+                                            className="color-text"
+                                            placeholder="#000000"
+                                        />
+                                    </div>
+                                    <div className="color-presets">
+                                        {['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'].map(color => (
+                                            <button
+                                                key={color}
+                                                className={`color-preset ${nodeSettings.color === color ? 'active' : ''}`}
+                                                style={{ background: color }}
+                                                onClick={() => updateNodeProperty('color', color)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Notes Section */}
+                        <div className={`inspector-section description-section ${inspectorCollapsed.notes ? 'collapsed' : ''}`}>
+                            <div
+                                className="inspector-section-title collapsible"
+                                onClick={() => setInspectorCollapsed(prev => ({ ...prev, notes: !prev.notes }))}
+                            >
+                                <span className="collapse-arrow">{inspectorCollapsed.notes ? '▶' : '▼'}</span>
+                                Notes
                             </div>
+                            {!inspectorCollapsed.notes && (
+                                <div className="inspector-field description-field">
+                                    <textarea
+                                        value={nodeSettings.description}
+                                        onChange={(e) => updateNodeProperty('description', e.target.value)}
+                                        placeholder="Enter node description or notes..."
+                                        rows={8}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Delete Node Section */}

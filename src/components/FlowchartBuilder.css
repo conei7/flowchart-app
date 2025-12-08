@@ -767,6 +767,35 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Collapsible section title (Unity-style) */
+.inspector-section-title.collapsible {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--transition-base);
+    padding: 8px;
+    margin: -8px -8px 12px -8px;
+    border-radius: 6px;
+}
+
+.inspector-section-title.collapsible:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.collapse-arrow {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    transition: transform var(--transition-fast);
+}
+
+.inspector-section.collapsed .inspector-section-title {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
 .inspector-field {
     margin-bottom: 14px;
 }
