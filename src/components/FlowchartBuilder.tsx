@@ -21,7 +21,7 @@ import { nodeTypes } from './nodes/CustomNodes';
 import { exportAsImage, exportAsText, copyMermaidToClipboard, saveProject, loadProject } from '../utils/export';
 import './FlowchartBuilder.css';
 
-const APP_VERSION = 'v1.2.15';
+const APP_VERSION = 'v1.2.16';
 const STORAGE_KEY = 'flowchart-autosave';
 
 // Default colors for each node type
@@ -495,10 +495,15 @@ export const FlowchartBuilder = ({ externalShowHelp, onHelpClose }: FlowchartBui
             if (!type) return;
 
             // Get the position in flow coordinates
-            const dropPosition = reactFlowInstance.screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY,
-            });
+            // Get the position in flow coordinates using manual calculation
+            // (fixes initial drag offset issue where screenToFlowPosition might use stale bounds)
+            const bounds = reactFlowWrapper.current.getBoundingClientRect();
+            const { x: viewportX, y: viewportY, zoom } = reactFlowInstance.getViewport();
+
+            const dropPosition = {
+                x: (event.clientX - bounds.left - viewportX) / zoom,
+                y: (event.clientY - bounds.top - viewportY) / zoom,
+            };
 
             // Set initial size based on node type and calculate centered position
             const getNodeSize = (nodeType: string) => {
